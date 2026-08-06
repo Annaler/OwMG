@@ -3,10 +3,23 @@ import os
 import re
 from datetime import datetime
 import time
+from decimal import Decimal, ROUND_HALF_UP
 
 dataFile = "data.json"
 goOn = False
 sorts = {"1": "吃喝","2": "玩乐", "3": "衣", "4": "住", "5": "行", "0": "其他"}
+dateFormat = [
+    "%Y-%m-%d",
+    "%Y/%m/%d",
+    "%Y.%m.%d",
+    "%Y年%m月%d日",
+    "%Y%m%d",
+    "%y-%m-%d",
+    "%y/%m/%d",
+    "%y.%m.%d",
+    "%y年%m月%d日",
+    "%y%m%d"
+    ]
 
 #定义数据存取
 def saveData(accounts):
@@ -24,21 +37,25 @@ def validNum(n):
     expe = r'^-?\d+(\.\d{1,2})?$' #正则：整数或一/两位小数
     if re.match(expe, n):
         try:
-            float(n)
+            Decimal(n)
             goOn = True
             return
         except ValueError:
             pass
     goOn = False
-            
+#金额格式化
+def formatAmount(n):
+    return Decimal(n).quantize(Decimal(0.01), rounding=ROUND_HALF_UP)
 
-#时间校验
+#时间校验与自动修正
 def validTime(t):
-    try:
-        datetime.strptime(t, "%Y-%m-%d")
-        return True
-    except ValueError:
-        return False
+    for fmt in dateFormat:
+        try:
+            dt = datetime.strptime(t, fmt)
+            return dt.strftime("%Y-%m-%d")
+        except (ValueError, TypeError):
+            continue
+    return False
 
 def mainMenu(): #主菜单
     accounts = loadData()
@@ -59,7 +76,7 @@ def mainMenu(): #主菜单
                 amount = str(input("金额: ").strip())
                 validNum(amount)
                 if goOn:
-                    amount = float(amount)
+                    formatAmount(amount)
                     break
                 else:
                     print("掌柜的，", end = "", flush = False)
@@ -82,12 +99,14 @@ def mainMenu(): #主菜单
                 mark = "N/A"
 
             while True:#时间
-                date = str(input("时间(默认当天, 格式YYYY-MM-DD): ").strip())
+                date = str(input("时间(年-月-日，默认当天): ").strip())
                 if date == "":
                     date  = datetime.now().strftime("%Y-%m-%d")
                     break
-                elif validTime(date):
+                if validTime(date):
+                    date = validTime(date)
                     break
+                print("不支持的格式。")
                 print("您再斟酌斟酌？")
                 time.sleep(0.5)
 
@@ -134,11 +153,11 @@ def mainMenu(): #主菜单
             print("这对", end = "", flush = True)
             time.sleep(0.5)
             print(".", end = "", flush = True)
-            time.sleep(0.5)
+            time.sleep(0.2)
             print(".", end = "", flush = True)
-            time.sleep(0.5)
+            time.sleep(0.3)
             print(".", end = "", flush = True)
-            time.sleep(0.5)
+            time.sleep(0.4)
             print("吗？")
             time.sleep(0.7)
 
