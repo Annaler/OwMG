@@ -69,65 +69,73 @@ def mainMenu(): #主菜单
 
 #新账
         if goToMenu == "1" or goToMenu == "n":
-            print("纸笔已备好，请！")
+            while True:
+                print("纸笔已备好，请！")
 
-            while True:#金额
-                amount = str(input("金额: ").strip())
-                validNum(amount)
-                if goOn:
-                    amount = Decimal(amount)
-                    amount = str(formatAmount(amount))
-                    break
-                else:
-                    print("掌柜的，", end = "", flush = False)
-                    time.sleep(0.1)
-                    print("这数不对吧")
+                while True:#金额
+                    amount = str(input("金额: ").strip())
+                    validNum(amount)
+                    if goOn:
+                        amount = Decimal(amount)
+                        amount = str(formatAmount(amount))
+                        break
+                    else:
+                        print("掌柜的，", end = "", flush = False)
+                        time.sleep(0.1)
+                        print("这数不对吧")
 
-            while True:#类别
-                sort = str(input("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他\n类别: "))         
-                if sort in sorts:
-                    sort = sorts[sort]
-                    break
-                elif sort in sorts.values():
-                    break
-                else:
-                    print("请掌柜的再斟酌")
+                while True:#类别
+                    sort = str(input("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他\n类别: "))         
+                    if sort in sorts:
+                        sort = sorts[sort]
+                        break
+                    elif sort in sorts.values():
+                        break
+                    else:
+                        print("请掌柜的再斟酌")
+                        time.sleep(0.5)
+
+                mark = str(input("备注(默认“N/A”): ").strip())#备注
+                if mark == "":
+                    mark = "N/A"
+
+                while True:#时间
+                    date = str(input("时间(年-月-日，默认当天): ").strip())
+                    if date == "":
+                        date  = datetime.now().strftime("%Y-%m-%d")
+                        break
+                    if validTime(date):
+                        date = validTime(date)
+                        break
+                    print("不支持的格式。")
+                    print("您再斟酌斟酌？")
                     time.sleep(0.5)
 
-            mark = str(input("备注(默认“N/A”): ").strip())#备注
-            if mark == "":
-                mark = "N/A"
+                newID = max([r["id"] for r in accounts], default = 0) + 1#ID
 
-            while True:#时间
-                date = str(input("时间(年-月-日，默认当天): ").strip())
-                if date == "":
-                    date  = datetime.now().strftime("%Y-%m-%d")
-                    break
-                if validTime(date):
-                    date = validTime(date)
-                    break
-                print("不支持的格式。")
-                print("您再斟酌斟酌？")
-                time.sleep(0.5)
-
-            newID = max([r["id"] for r in accounts], default = 0) + 1#ID
-
-            account = {
-                "id" : newID,
-                "sort" : sort,
-                "amount" : amount,
-                "mark" : mark,
-                "date" : date
-            }
-            
-            #录入账目
-            accounts.append(account)
-            saveData(accounts)
-            loadData()
-            
-            if len(accounts) == 1:
-                print("记录是掌握生活的开始")
-            print("记账成功")
+                account = {
+                    "id" : newID,
+                    "sort" : sort,
+                    "amount" : amount,
+                    "mark" : mark,
+                    "date" : date
+                }
+                
+                #录入账目
+                accounts.append(account)
+                saveData(accounts)
+                loadData()
+                
+                if len(accounts) == 1:
+                    print("记录是掌握生活的开始！")
+                    time.sleep(0.5)
+                print("记账成功。", end = "", flush = True)
+                while True:
+                    goON = input("再记一笔？(y/n)")
+                    if goON == "y":
+                        continue
+                    elif goON == "n":
+                        break
 
 #阅账
         elif goToMenu == "2" or goToMenu == "v":
