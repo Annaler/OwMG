@@ -3,10 +3,10 @@ import os
 import re
 from datetime import datetime
 import time
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 
 dataFile = "data.json"
-goOn = False
+goON = False
 sorts = {"1": "吃喝","2": "玩乐", "3": "衣", "4": "住", "5": "行", "0": "其他"}
 dateFormat = [
     "%Y-%m-%d",
@@ -45,7 +45,7 @@ def validNum(n):
     goOn = False
 #金额格式化
 def formatAmount(n):
-    return Decimal(n).quantize(Decimal(0.01), rounding=ROUND_HALF_UP)
+    return n.quantize(Decimal('0.01'))
 
 #时间校验与自动修正
 def validTime(t):
@@ -60,13 +60,12 @@ def validTime(t):
 def mainMenu(): #主菜单
     accounts = loadData()
     while True:
-        print("=" * 14)
-        print("主菜单")
-        print("=" * 14)
-        print("1.新账(n)\n2.阅账(v)\n3.查账(f)\n4.划账(d)\n5.统账(c)\n6.改账(e)\n0.合账(q)")
-        print("=" * 14)
+        print("=" * 44)
+        print("钱都去哪了?")
+        print("=" * 44)
+        print("1.新账(n) 2.阅账(v) 3.查账(f)\n4.划账(d) 5.统账(c) 6.改账(e)\n0.合账(q)")
+        print("=" * 44)
         goToMenu = str(input("掌柜的，怎么说？"))
-
 
 #新账
         if goToMenu == "1" or goToMenu == "n":
@@ -76,7 +75,8 @@ def mainMenu(): #主菜单
                 amount = str(input("金额: ").strip())
                 validNum(amount)
                 if goOn:
-                    formatAmount(amount)
+                    amount = Decimal(amount)
+                    amount = str(formatAmount(amount))
                     break
                 else:
                     print("掌柜的，", end = "", flush = False)
@@ -117,28 +117,62 @@ def mainMenu(): #主菜单
                 "sort" : sort,
                 "amount" : amount,
                 "mark" : mark,
-                "Date" : date
+                "date" : date
             }
             
             #录入账目
             accounts.append(account)
             saveData(accounts)
+            loadData()
             
             if len(accounts) == 1:
                 print("记录是掌握生活的开始")
             print("记账成功")
 
-
+#阅账
         elif goToMenu == "2" or goToMenu == "v":
-            pass #看
+            income = 0
+            expand = 0
+            balance = 0
+            print("-" * 44)
+            print(f"{'ID':<8} {'日期':<10} {'类别':<4} {'金额':<8} {'备注':<8}")
+            print("-" * 44)
+            if not accounts:
+                print("空空如也，记笔账吧。")
+                income = expand = balance = "N/A"
+            else:
+                for i in accounts:
+                    print(f"{i['id']:<4}{i['date']:<10}{i['sort']:<8}{i['amount']:<8}{i['mark']:<8}")
+                    amt = Decimal(i['amount'])
+                    if amt > 0:
+                        income += amt
+                    elif amt < 0:
+                        expand += Decimal(abs(amt))
+                balance = income - expand
+            print("-" * 44)
+            print(f"总计:收入{income} 支出{expand} 结余{balance}")
+            while True:
+                y = input("回到主菜单？(y)")
+                if y == "y":
+                    break
+
+
         elif goToMenu == "3" or goToMenu == "f":
             pass #查
+
+
         elif goToMenu == "4" or goToMenu == "d":
             pass #遗忘过去
+
+
         elif goToMenu == "5" or goToMenu == "c":
             pass #统计筛选
+
+#改账
         elif goToMenu == "6" or goToMenu == "e":
-            pass #更改
+            pass 
+
+#合账-退出
         elif goToMenu == "0" or goToMenu == "q":
             print("彳", end = "", flush = True)
             time.sleep(0.4)
@@ -146,7 +180,7 @@ def mainMenu(): #主菜单
             saveData(accounts)
             time.sleep(0.3)
             print("那就这样吧先。")
-            break #退出
+            break
         else:
             print("这不对吧，", end = "", flush = True)
             time.sleep(0.4)
