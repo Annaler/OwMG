@@ -27,7 +27,9 @@ Ohwhere Money Go - OwMG
 4. 查看记录
     * 显示总收支&结余
     * 对于各记录：显示“ID 日期 类别 金额 备注”
+#以上已实现
     * Options/Settings for user（可选）
+    * 目前：缩进格式/排版相关问题未解决
 5. 删除记录
     * 根据ID删除
 6. 搜索记录

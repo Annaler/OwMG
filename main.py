@@ -6,7 +6,8 @@ import time
 from decimal import Decimal
 
 dataFile = "data.json"
-goON = False
+goOn = False
+iQuit = ["0", "q", "退出"]
 sorts = {"1": "吃喝","2": "玩乐", "3": "衣", "4": "住", "5": "行", "0": "其他"}
 dateFormat = [
     "%Y-%m-%d",
@@ -19,7 +20,13 @@ dateFormat = [
     "%y.%m.%d",
     "%y年%m月%d日",
     "%y%m%d"
-    ]
+]
+slections = {
+    "1": ["ID", "i"],
+    "2": ["日期", "d"],
+    "3": ["类别", "s"],
+    "4": ["备注", "m"]
+}
 
 #定义数据存取
 def saveData(accounts):
@@ -30,6 +37,11 @@ def loadData():
         return []
     with open(dataFile, "r", encoding = "utf-8") as f:
         return json.load(f)
+
+#SNAKKKKK
+def snake():
+    print("没有账目，但是你发现了一条小蛇/Snake Only")
+    print("see,snake:b\n(   )\n(   )\n(. .)")
 
 #金额数校验
 def validNum(n):
@@ -57,12 +69,52 @@ def validTime(t):
             continue
     return False
 
+#查账选项校验与格式化
+def checkSlection(s, dict):
+    global goON 
+    #反向映射构建
+    reverse_map = {}
+    for key, values in dict.items():
+        for value in values:
+            reverse_map[value] = key
+    if s in dict:
+        goOn = True
+        return s
+    elif s in reverse_map:
+        goOn = True
+        return reverse_map[s]
+    goON = False
+    return s
+
+#显示账目方法（通用）
+def showAccount(a):
+    income = 0
+    expand = 0
+    balance = 0
+    print("-" * 44)
+    print(f"{'ID':<8} {'日期':<10} {'类别':<4} {'金额':<8} {'备注':<8}")
+    print("-" * 44)
+    if not a:
+        print("空空如也，记笔账吧。")
+        income = expand = balance = "N/A"
+    else:
+        for i in a:
+            print(f"{i['id']:<4}{i['date']:<10}{i['sort']:<8}{i['amount']:<8}{i['mark']:<8}")
+            amt = Decimal(i['amount'])
+            if amt > 0:
+                income += amt
+            elif amt < 0:
+                expand += Decimal(abs(amt))
+        balance = income - expand
+    print("-" * 44)
+    print(f"总计:收入{income} 支出{expand} 结余{balance}")
+
 def mainMenu(): #主菜单
     accounts = loadData()
     while True:
         print("=" * 44)
         print("钱都去哪了?")
-        print("=" * 44)
+       print("=" * 44)
         print("1.新账(n) 2.阅账(v) 3.查账(f)\n4.划账(d) 5.统账(c) 6.改账(e)\n0.合账(q)")
         print("=" * 44)
         goToMenu = str(input("掌柜的，怎么说？"))
@@ -137,44 +189,63 @@ def mainMenu(): #主菜单
                     elif goON == "n":
                         break
 
-#阅账
+#阅账 Issue:账目格式/排版
         elif goToMenu == "2" or goToMenu == "v":
-            income = 0
-            expand = 0
-            balance = 0
-            print("-" * 44)
-            print(f"{'ID':<8} {'日期':<10} {'类别':<4} {'金额':<8} {'备注':<8}")
-            print("-" * 44)
-            if not accounts:
-                print("空空如也，记笔账吧。")
-                income = expand = balance = "N/A"
-            else:
-                for i in accounts:
-                    print(f"{i['id']:<4}{i['date']:<10}{i['sort']:<8}{i['amount']:<8}{i['mark']:<8}")
-                    amt = Decimal(i['amount'])
-                    if amt > 0:
-                        income += amt
-                    elif amt < 0:
-                        expand += Decimal(abs(amt))
-                balance = income - expand
-            print("-" * 44)
-            print(f"总计:收入{income} 支出{expand} 结余{balance}")
+            showAccount(accounts)
             while True:
                 y = input("回到主菜单？(y)")
                 if y == "y":
                     break
 
-
+#查账
         elif goToMenu == "3" or goToMenu == "f":
-            pass #查
+            while True:
+                print("-" * 19, "查账", "-" * 19)
+                print("以何为规？")
+                print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 5. 备注(m) 0.退出(q)" ) 
+                way2find = input("您的选择？").strip()
+                if way2find in iQuit:
+                    break 
+                way2find = checkSlection(way2find, slections)
+                if goOn == False:
+                    print("目前只支持以上选项哦。")
+                    continue
+                word2find = input("用于查询的关键词：").strip()
+                result = []
+                for a in accounts:
+                    if way2find == "1" and word2find in str(a['id']):
+                        result.append(a)
+                    elif way2find == "2" and word2find in str(a['date']):
+                        result.append(a)
+                    elif way2find == "3" and word2find in str(a['amount']):
+                        result.append(a)
+                    elif way2find == "4" and word2find in str(a['sort']):
+                        result.append(a)
+                    elif way2find == "5" and word2find in str(a['mark']):
+                        ersult.append(a)
+                if len(result) == 0:
+                    snake()
+                else:
+                    print(f"共找到{len(result)}条账目，立刻供上。")
+                    time.sleep(0.5)
+                    showAccount(result)
+
+            while way2find not in iQuit:
+                goON = input("还查账吗？(y)")
+                if goON == "y":
+                    continue
+                else:
+                    break
 
 
+
+#删除账目
         elif goToMenu == "4" or goToMenu == "d":
             pass #遗忘过去
 
-
+#统计筛选
         elif goToMenu == "5" or goToMenu == "c":
-            pass #统计筛选
+            pass
 
 #改账
         elif goToMenu == "6" or goToMenu == "e":
