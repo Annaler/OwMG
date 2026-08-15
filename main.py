@@ -71,19 +71,19 @@ def validTime(t):
 
 #查账选项校验与格式化
 def checkSlection(s, dict):
-    global goON 
+    global goOn
     #反向映射构建
-    reverse_map = {}
+    reverseMap = {}
     for key, values in dict.items():
         for value in values:
-            reverse_map[value] = key
+            reverseMap[value] = key
     if s in dict:
         goOn = True
         return s
-    elif s in reverse_map:
+    elif s in reverseMap:
         goOn = True
-        return reverse_map[s]
-    goON = False
+        return reverseMap[s]
+    goOn = False
     return s
 
 #显示账目方法（通用）
@@ -114,7 +114,7 @@ def mainMenu(): #主菜单
     while True:
         print("=" * 44)
         print("钱都去哪了?")
-       print("=" * 44)
+        print("=" * 44)
         print("1.新账(n) 2.阅账(v) 3.查账(f)\n4.划账(d) 5.统账(c) 6.改账(e)\n0.合账(q)")
         print("=" * 44)
         goToMenu = str(input("掌柜的，怎么说？"))
@@ -183,10 +183,10 @@ def mainMenu(): #主菜单
                     time.sleep(0.5)
                 print("记账成功。", end = "", flush = True)
                 while True:
-                    goON = input("再记一笔？(y/n)")
-                    if goON == "y":
+                    more = input("再记一笔？(y/n)")
+                    if more == "y":
                         continue
-                    elif goON == "n":
+                    elif more == "n":
                         break
 
 #阅账 Issue:账目格式/排版
@@ -222,7 +222,7 @@ def mainMenu(): #主菜单
                     elif way2find == "4" and word2find in str(a['sort']):
                         result.append(a)
                     elif way2find == "5" and word2find in str(a['mark']):
-                        ersult.append(a)
+                        result.append(a)
                 if len(result) == 0:
                     snake()
                 else:
@@ -231,13 +231,11 @@ def mainMenu(): #主菜单
                     showAccount(result)
 
             while way2find not in iQuit:
-                goON = input("还查账吗？(y)")
-                if goON == "y":
+                goOn = input("还查账吗？(y)")
+                if goOn == "y":
                     continue
                 else:
                     break
-
-
 
 #删除账目
         elif goToMenu == "4" or goToMenu == "d":
