@@ -210,7 +210,7 @@ def mainMenu(): #主菜单
                 if goOn == False:
                     print("目前只支持以上选项哦。")
                     continue
-                word2find = input("用于查询的关键词：").strip()
+                word2find = str(input("用于查询的关键词：")).strip()
                 result = []
                 for a in accounts:
                     if way2find == "1" and word2find in str(a['id']):
@@ -239,7 +239,46 @@ def mainMenu(): #主菜单
 
 #删除账目
         elif goToMenu == "4" or goToMenu == "d":
-            pass #遗忘过去
+            while True:
+                if len(accounts) == 0:
+                    print("还没记呢，比脸还白的账本还要划。怎地，要画画么？")
+                    break
+                print("-" * 19, "划账", "-" * 19)
+                print("依甚划账？")
+                print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 5. 备注(m) 0.退出(q)" ) 
+                way2find = input("您的选择？").strip()
+                if way2find in iQuit:
+                    break 
+                way2find = checkSlection(way2find, slections)
+                if goOn == False:
+                    print("目前只支持以上选项哦。")
+                    continue
+                word2find = str(input("用于划账的关键词：")).strip()
+                deletion == 0
+                #考虑加入先让人过一眼要删除的,y/n再删除
+                for a in accounts:
+                    if way2find == "1" and str(a['id']) == word2find:
+                        result.remove(a)
+                        deletion += 1
+                    elif way2find == "2" and str(a['date']) == word2find:
+                        result.remove(a)
+                        deletion += 1
+                    elif way2find == "3" and str(a['amount']) == word2find:
+                        result.remove(a)
+                        deletion += 1
+                    elif way2find == "4" and str(a['sort']) == word2find:
+                        result.remove(a)
+                        deletion += 1
+                    elif way2find == "5" and str(a['mark']) == word2find:
+                        result.remove(a)
+                        deletion += 1
+                if deletion == 0:
+                    snake()
+                else:
+                    print("已寻找到并删除", deletion, "条账目")
+            more = input("再划？(y)")
+            if more == "y":
+                continue
 
 #统计筛选
         elif goToMenu == "5" or goToMenu == "c":
