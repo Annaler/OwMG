@@ -7,7 +7,7 @@ from decimal import Decimal
 
 dataFile = "data.json"
 goOn = False
-iQuit = ["0", "q", "退出"]
+iQuit = ["0", "q", "退出", "quit"]
 sorts = {"1": "吃喝","2": "玩乐", "3": "衣", "4": "住", "5": "行", "0": "其他"}
 dateFormat = [
     "%Y-%m-%d",
@@ -253,8 +253,32 @@ def mainMenu(): #主菜单
                 if goOn == False:
                     print("目前只支持以上选项哦。")
                     continue
-                print("tips:金额格式为xx.xx,日期格式为xxxx-xx-xx。")
-                word2find = str(input("用于划账的关键词：")).strip()
+                
+                '''print("tips:金额格式为xx.xx,日期格式为xxxx-xx-xx。")
+                复用之前新账 种类逻辑，部分金额、日期逻辑
+                金额、日期、种类校验并转换'''
+                while way2find in ["2", "3", "4"]:
+                    if way2find == "4":
+                        print("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他")
+                    word2find = str(input("用于划账的关键词：")).strip()
+                    if way2find == "2" and validTime(word2find):
+                        word2find = validTime(word2find)
+                        break
+                    elif way2find == "3":
+                        validNum(word2find)
+                        if goOn:
+                            word2find = Decimal(word2find)
+                            word2find = str(formatAmount(word2find))
+                            break
+                    elif way2find == "4":
+                        if word2find in sorts:
+                            word2find = sorts[word2find]
+                            break
+                        elif word2find in sorts.values():
+                            break
+                    print("您再斟酌斟酌？")
+                    time.sleep(0.5)
+
                 deletion = 0
                 #考虑加入先让人过一眼要删除的,y/n再删除
                 for a in accounts:
