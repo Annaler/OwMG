@@ -253,28 +253,30 @@ def mainMenu(): #主菜单
                 if goOn == False:
                     print("目前只支持以上选项哦。")
                     continue
+                print("tips:金额格式为xx.xx,日期格式为xxxx-xx-xx。")
                 word2find = str(input("用于划账的关键词：")).strip()
-                deletion == 0
+                deletion = 0
                 #考虑加入先让人过一眼要删除的,y/n再删除
                 for a in accounts:
                     if way2find == "1" and str(a['id']) == word2find:
-                        result.remove(a)
+                        accounts.remove(a)
                         deletion += 1
                     elif way2find == "2" and str(a['date']) == word2find:
-                        result.remove(a)
+                        accounts.remove(a)
                         deletion += 1
                     elif way2find == "3" and str(a['amount']) == word2find:
-                        result.remove(a)
+                        accounts.remove(a)
                         deletion += 1
                     elif way2find == "4" and str(a['sort']) == word2find:
-                        result.remove(a)
+                        accounts.remove(a)
                         deletion += 1
                     elif way2find == "5" and str(a['mark']) == word2find:
-                        result.remove(a)
+                        accounts.remove(a)
                         deletion += 1
                 if deletion == 0:
                     snake()
                 else:
+                    saveData(accounts)
                     print("已寻找到并删除", deletion, "条账目")
             more = input("再划？(y)")
             if more == "y":
@@ -285,7 +287,7 @@ def mainMenu(): #主菜单
             pass
 
 #改账
-        elif goToMenu == "6" or goToMenu == "e":
+        elif g=oToMenu == "6" or goToMenu == "e":
             pass 
 
 #合账-退出
