@@ -6,7 +6,6 @@ import time
 from decimal import Decimal
 
 dataFile = "data.json"
-goOn = False
 iQuit = ["0", "q", "退出", "quit"]
 sorts = {"1": "吃喝","2": "玩乐", "3": "衣", "4": "住", "5": "行", "0": "其他"}
 dateFormat = [
@@ -45,7 +44,6 @@ def snake():
 
 #金额数校验
 def validNum(n):
-    global goOn
     expe = r'^-?\d+(\.\d{1,2})?$' #正则：整数或一/两位小数
     if re.match(expe, n):
         try:
@@ -55,6 +53,7 @@ def validNum(n):
         except ValueError:
             pass
     goOn = False
+    return goOn
 #金额格式化
 def formatAmount(n):
     return n.quantize(Decimal('0.01'))
@@ -70,20 +69,20 @@ def validTime(t):
     return False
 
 #查账选项校验与格式化
-def checkSlection(s, dict):
+def checkSlection(way2find, slections):
     #反向映射构建
     reverseMap = {}
-    for key, values in dict.items():
+    for key, values in slections.items():
         for value in values:
             reverseMap[value] = key
-    if s in dict:
+    if way2find in slections:
         goOn = True
-        return s
-    elif s in reverseMap:
+        return way2find
+    elif way2find in reverseMap:
         goOn = True
         return reverseMap[s]
     goOn = False
-    return s, goOn
+    return way2find, goOn
 
 #获得，校验并format word2find
 def word2find_check(way2find, word2find, quiz, accounts):
@@ -99,7 +98,7 @@ def word2find_check(way2find, word2find, quiz, accounts):
             word2find = validTime(word2find)
             break
         elif way2find == "3":
-            validNum(word2find)
+            goOn = validNum(word2find)
             if goOn:
                 word2find = Decimal(word2find)
                 word2find = str(formatAmount(word2find))
@@ -175,7 +174,7 @@ def mainMenu():#主菜单
 
                 while True:#金额
                     amount = str(input("金额: ").strip())
-                    validNum(amount)
+                    goOn = validNum(amount)
                     if goOn:
                         amount = Decimal(amount)
                         amount = str(formatAmount(amount))
