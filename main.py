@@ -69,18 +69,18 @@ def validTime(t):
     return False
 
 #查账选项校验与格式化
-def checkSlection(way2find, slections):
+def checkSlection(way2find, slec):
     #反向映射构建
     reverseMap = {}
-    for key, values in slections.items():
+    for key, values in slec.items():
         for value in values:
             reverseMap[value] = key
-    if way2find in slections:
+    if way2find in slec:
         goOn = True
-        return way2find
+        return way2find, goOn
     elif way2find in reverseMap:
         goOn = True
-        return reverseMap[s]
+        return reverseMap[way2find], goOn
     goOn = False
     return way2find, goOn
 
@@ -319,7 +319,7 @@ def mainMenu():#主菜单
             if way2find not in iQuit:
                 time.sleep(0.2)
                 goOn = input("再划？(y)")
-                if more == "y":
+                if goOn == "y":
                     continue
 
 #统计筛选
