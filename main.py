@@ -28,9 +28,9 @@ slections = {
 }
 
 #定义数据存取
-def saveData(accounts):
+def saveData(accs):
     with open(dataFile, "w", encoding="utf-8") as f:
-        json.dump(accounts, f, ensure_ascii = False, indent = 4)
+        json.dump(accs, f, ensure_ascii = False, indent = 4)
 def loadData():
     if not os.path.exists(dataFile):
         return []
@@ -69,70 +69,70 @@ def validTime(t):
     return False
 
 #查账选项校验与格式化
-def checkSlection(way2find, slec):
+def checkSlection(way, slec):
     #反向映射构建
     reverseMap = {}
     for key, values in slec.items():
         for value in values:
             reverseMap[value] = key
-    if way2find in slec:
+    if way in slec:
         goOn = True
-        return way2find, goOn
-    elif way2find in reverseMap:
+        return way, goOn
+    elif way in reverseMap:
         goOn = True
-        return reverseMap[way2find], goOn
+        return reverseMap[way], goOn
     goOn = False
-    return way2find, goOn
+    return way, goOn
 
 #获得，校验并format word2find
-def word2find_check(way2find, word2find, quiz, accounts):
+def word2find_check(way, word, q, accs):
     while True:
-        if way2find == "4":
+        if way == "4":
             print("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他")
-        word2find = input(quiz).strip()
-        if way2find == "1":
-            if isinstance(word2find, int) and any(d.get('id') == word2find for d in accounts):
+        word = input(q).strip()
+        if way == "1":
+            if isinstance(word, int) and any(d.get('id') == word for d in accs):
                 break
     #金额、日期、种类校验并转换:复用之前新账 种类逻辑，部分金额、日期逻辑
-        elif way2find == "2" and validTime(word2find):
-            word2find = validTime(word2find)
+        elif way == "2" and validTime(word):
+            word = validTime(word)
             break
-        elif way2find == "3":
-            goOn = validNum(word2find)
+        elif way == "3":
+            goOn = validNum(word)
             if goOn:
-                word2find = Decimal(word2find)
-                word2find = str(formatAmount(word2find))
+                word = Decimal(word)
+                word = str(formatAmount(word))
                 break
-        elif way2find == "4":
-            if word2find in sorts:
-                word2find = sorts[word2find]
+        elif way == "4":
+            if word in sorts:
+                word = sorts[word]
                 break
-            elif word2find in sorts.values():
+            elif word in sorts.values():
                 break
         print("您再斟酌斟酌？")
         time.sleep(0.5)
-    return word2find
+    return word
 
 #拆分并优化查账部分逻辑为方法便于复用
-def getAccount(way2find, word2find, result, accounts):
-    result = []
-    for a in accounts:
-        if way2find == "1" and word2find == str(a['id']):
-            result.append(a)
-        elif way2find == "2" and word2find == str(a['date']):
-            result.append(a)
-        elif way2find == "3" and word2find == str(a['amount']):
-            result.append(a)
-        elif way2find == "4" and word2find == str(a['sort']):
-            result.append(a)
-        elif way2find == "5" and word2find == str(a['mark']):
-            result.append(a)
-    return result
+def getAccount(way, word, resu, accs):
+    resu = []
+    for a in accs:
+        if way == "1" and word == str(a['id']):
+            resu.append(a)
+        elif way== "2" and word == str(a['date']):
+            resu.append(a)
+        elif way == "3" and word == str(a['amount']):
+            resu.append(a)
+        elif way == "4" and word == str(a['sort']):
+            resu.append(a)
+        elif way == "5" and word == str(a['mark']):
+            resu.append(a)
+    return resu
 
 #全匹配删除，从accounts由result所有
-def delAccount(result, accounts):
-    accounts = [a for a in accounts if a not in result]
-    return accounts
+def delAccount(resu, accs):
+    accs = [a for a in accs if a not in resu]
+    return accs
 
 #显示账目方法（通用）
 def showAccount(a):
@@ -260,9 +260,11 @@ def mainMenu():#主菜单
                     continue
 
                 quiz = "用于查询的关键词："
-                word2find = word2find_check(way2find, word2find, quiz)
+                word2find = 0
+                word2find = word2find_check(way2find, word2find, quiz, accounts)
 
-                getAccount(result)
+                result = {}
+                getAccount(way2find, word2find, result, accounts)
                 if len(result) == 0:
                     snake()
                 else:
@@ -293,7 +295,7 @@ def mainMenu():#主菜单
                     continue
 
                 quiz = "用于划账的关键词："
-                word2find = word2find_check(way2find, word2find, quiz)
+                word2find = word2find_check(way2find, word2find, quiz, accounts)
                 #issue:如果用户在word2find想退出(到上一步?)。考虑iQuit
 
     #加入先让人过一眼要删除的y/n再删除
