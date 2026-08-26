@@ -1,8 +1,8 @@
 import json
 import os
 import re
-from datetime import datetime
 import time
+from datetime import datetime, timezone
 from decimal import Decimal
 
 dataFile = "data.json"
@@ -49,7 +49,7 @@ def validNum(n):
         try:
             Decimal(n)
             goOn = True
-            return
+            return goOn
         except ValueError:
             pass
     goOn = False
@@ -62,7 +62,7 @@ def formatAmount(n):
 def validTime(t):
     for fmt in dateFormat:
         try:
-            dt = datetime.strptime(t, fmt)
+            dt = datetime.strptime(t, fmt) # noqa: DTZ007
             return dt.strftime("%Y-%m-%d")
         except (ValueError, TypeError):
             continue
@@ -117,15 +117,7 @@ def word2find_check(way, word, q, accs):
 def getAccount(way, word, resu, accs):
     resu = []
     for a in accs:
-        if way == "1" and word == str(a['id']):
-            resu.append(a)
-        elif way== "2" and word == str(a['date']):
-            resu.append(a)
-        elif way == "3" and word == str(a['amount']):
-            resu.append(a)
-        elif way == "4" and word == str(a['sort']):
-            resu.append(a)
-        elif way == "5" and word == str(a['mark']):
+        if way == "1" and word == str(a['id']) or way== "2" and word == str(a['date']) or way == "3" and word == str(a['amount']) or way == "4" and word == str(a['sort']) or way == "5" and word == str(a['mark']):
             resu.append(a)
     return resu
 
@@ -202,7 +194,7 @@ def mainMenu():#主菜单
                 while True:#时间
                     date = str(input("时间(年-月-日，默认当天): ").strip())
                     if date == "":
-                        date  = datetime.now().strftime("%Y-%m-%d")
+                        date  = datetime.now(timezone.utc).strftime("%Y-%m-%d")
                         break
                     if validTime(date):
                         date = validTime(date)
@@ -247,6 +239,7 @@ def mainMenu():#主菜单
 
 #查账
         elif goToMenu == "3" or goToMenu == "f":
+            way2find = ""
             while True:
                 print("-" * 19, "查账", "-" * 19)
                 print("以何为规？")
@@ -279,6 +272,7 @@ def mainMenu():#主菜单
 
 #划账
         elif goToMenu == "4" or goToMenu == "d":
+            way2find = ""
             while True:
                 if len(accounts) == 0:
                     print("还没记呢，比脸还白的账本还要划。怎地，要画画么？")
@@ -295,10 +289,12 @@ def mainMenu():#主菜单
                     continue
 
                 quiz = "用于划账的关键词："
+                word2find = 0
                 word2find = word2find_check(way2find, word2find, quiz, accounts)
                 #issue:如果用户在word2find想退出(到上一步?)。考虑iQuit
 
     #加入先让人过一眼要删除的y/n再删除
+                result = 0
                 result = getAccount(way2find, word2find, result, accounts)
                 if len(result) == 0:
                     snake()
@@ -325,12 +321,8 @@ def mainMenu():#主菜单
                     continue
 
 #统计筛选
-        elif goToMenu == "5" or goToMenu == "c":
+        elif goToMenu == "5" or goToMenu == "c" or goToMenu == "6" or goToMenu == "e":
             pass
-
-#改账
-        elif goToMenu == "6" or goToMenu == "e":
-            pass 
 
 #合账-退出
         elif goToMenu in iQuit:
