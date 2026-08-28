@@ -2,8 +2,9 @@ import json
 import os
 import re
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
+from types import WrapperDescriptorType
 
 dataFile = "data.json"
 iQuit = ["0", "q", "退出", "quit"]
@@ -90,8 +91,14 @@ def word2find_check(way, word, q, accs):
         if way == "4":
             print("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他")
         word = input(q).strip()
-        if way == "1":
-            if isinstance(word, int) and any(d.get('id') == word for d in accs):
+        if way == "1":#by ID
+            try:
+                int(word)
+                goOn = True
+            except ValueError:
+                goOn = False
+            if goOn and any(i.get('id') == word for i in accs):
+                inAcc = True
                 break
     #金额、日期、种类校验并转换:复用之前新账 种类逻辑，部分金额、日期逻辑
         elif way == "2" and validTime(word):
@@ -111,13 +118,19 @@ def word2find_check(way, word, q, accs):
                 break
         print("您再斟酌斟酌？")
         time.sleep(0.5)
-    return word
+    return word, inAcc #pyright: ignore 
 
 #拆分并优化查账部分逻辑为方法便于复用
 def getAccount(way, word, resu, accs):
     resu = []
     for a in accs:
-        if way == "1" and word == str(a['id']) or way== "2" and word == str(a['date']) or way == "3" and word == str(a['amount']) or way == "4" and word == str(a['sort']) or way == "5" and word == str(a['mark']):
+        if (
+                (way == "1" and word == str(a['id'])) or
+                (way== "2" and word == str(a['date'])) or
+                (way == "3" and word == str(a['amount'])) or
+                (way == "4" and word == str(a['sort'])) or
+                (way == "5" and word == str(a['mark']))
+            ):
             resu.append(a)
     return resu
 
@@ -194,7 +207,7 @@ def mainMenu():#主菜单
                 while True:#时间
                     date = str(input("时间(年-月-日，默认当天): ").strip())
                     if date == "":
-                        date  = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                        date  = datetime.now().strftime("%Y-%m-%d") #noqa DTZ005
                         break
                     if validTime(date):
                         date = validTime(date)
@@ -254,9 +267,13 @@ def mainMenu():#主菜单
 
                 quiz = "用于查询的关键词："
                 word2find = 0
-                word2find = word2find_check(way2find, word2find, quiz, accounts)
-
-                result = {}
+                while True:
+                    word2find, inAccs = word2find_check(way2find, word2find, quiz, accounts)
+                    if inAccs:
+                        break
+                    else:
+                        print("您再斟酌斟酌？")
+                result = []
                 getAccount(way2find, word2find, result, accounts)
                 if len(result) == 0:
                     snake()
@@ -289,12 +306,18 @@ def mainMenu():#主菜单
                     continue
 
                 quiz = "用于划账的关键词："
-                word2find = 0
-                word2find = word2find_check(way2find, word2find, quiz, accounts)
+                word2find = ""
+                while True:
+                    word2find, inAccs = word2find_check(way2find, word2find, quiz, accounts)
+                    if inAccs:
+                        break
+                    else:
+                        print("您再斟酌斟酌？")
+                        time.sleep(0.2)
                 #issue:如果用户在word2find想退出(到上一步?)。考虑iQuit
 
     #加入先让人过一眼要删除的y/n再删除
-                result = 0
+                result = []
                 result = getAccount(way2find, word2find, result, accounts)
                 if len(result) == 0:
                     snake()
@@ -322,7 +345,28 @@ def mainMenu():#主菜单
 
 #统计筛选
         elif goToMenu == "5" or goToMenu == "c" or goToMenu == "6" or goToMenu == "e":
-            pass
+            while True:
+                print("-" * 19, "划账", "-" * 19)
+                print("按啥统账？")
+                print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 0.退出(q)")
+                way2find = input("您说呢？")
+                if way2find in iQuit:
+                    break
+                quiz = start = ""
+                start, _ = word2find_check(way2find, start, quiz, accounts)
+                quiz = over = ""
+                over, _ = word2find_check(way2find, over, quiz, accounts)
+                rang = {}#from start to over
+                #word2find = 1 =2 =3从start到over(这段定义为rang).append到result
+                result = []
+                for r in rang:
+                    result = getAccount(way2find, r, result, accounts)
+
+            if way2find not in iQuit:
+                time.sleep(0.2)
+                goON = input("还统么？(y)")
+                if goON == "y":
+                    continue
 
 #合账-退出
         elif goToMenu in iQuit:
