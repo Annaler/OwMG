@@ -97,7 +97,7 @@ def word2find_check(way, word, q, accs):
         if way == "4":
             print("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他")
         word = input(q).strip()
-        if word in iQuit:
+        if (word != "0") and (word in iQuit):
             break
         elif way == "1":#by ID
             try:
@@ -402,8 +402,8 @@ def mainMenu():#主菜单
                                 (( way2find == "1" ) and ( int(start) < int(over) )) or
                                 (( way2find == "2" ) and ( start < over )) or#pyright: ignore
                                 (( way2find == "3" ) and ( Decimal(start) < Decimal(over) ))
-                             ):
-                             break
+                              ):
+                            break
                         print("还请您再斟酌斟酌")
                         time.sleep(0.1)
 
