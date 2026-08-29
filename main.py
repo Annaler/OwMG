@@ -2,9 +2,8 @@ import json
 import os
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
-from types import WrapperDescriptorType
 
 dataFile = "data.json"
 iQuit = ["0", "q", "退出", "quit"]
@@ -21,11 +20,17 @@ dateFormat = [
     "%y年%m月%d日",
     "%y%m%d"
 ]
-slections = {
+slections1 = {
     "1": ["ID", "i"],
     "2": ["日期", "d"],
     "3": ["类别", "s"],
     "4": ["备注", "m"]
+}
+slections2 = {
+    "1": ["ID", "i"],
+    "2": ["日期", "d"],
+    "3": ["金额", "a"],
+    "4": ["类别", "s"],
 }
 
 #定义数据存取
@@ -87,17 +92,20 @@ def checkSlection(way, slec):
 
 #获得，校验并format word2find
 def word2find_check(way, word, q, accs):
+    inAcc = goOn = False
     while True:
         if way == "4":
             print("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他")
         word = input(q).strip()
-        if way == "1":#by ID
+        if word in iQuit:
+            break
+        elif way == "1":#by ID
             try:
                 int(word)
                 goOn = True
             except ValueError:
-                goOn = False
-            if goOn and any(i.get('id') == word for i in accs):
+                pass
+            if goOn and any(i.get('id') == int(word) for i in accs):
                 inAcc = True
                 break
     #金额、日期、种类校验并转换:复用之前新账 种类逻辑，部分金额、日期逻辑
@@ -120,8 +128,28 @@ def word2find_check(way, word, q, accs):
         time.sleep(0.5)
     return word, inAcc #pyright: ignore 
 
+def getRange(way, s, o):
+    r = []
+    if way == "1":
+        current = int(s)
+        while current <= int(o):
+            r.append(current)
+            current += 1
+    elif way == "2":
+        current = datetime.strptime(s, "%Y-%m-%d")#noqa DTZ007
+        while current.strftime("%Y-%m-%d") <= o:
+            r.append(current.strftime("%Y-%m-%d"))
+            current += timedelta(days = 1)
+    elif way == "3":
+        current = Decimal(s)
+        step = Decimal('0.01')
+        while current <= Decimal(o):
+            r.append(current)
+            current += step
+    return r
+
 #拆分并优化查账部分逻辑为方法便于复用
-def getAccount(way, word, resu, accs):
+def getAccount(way, word, accs):
     resu = []
     for a in accs:
         if (
@@ -207,7 +235,7 @@ def mainMenu():#主菜单
                 while True:#时间
                     date = str(input("时间(年-月-日，默认当天): ").strip())
                     if date == "":
-                        date  = datetime.now().strftime("%Y-%m-%d") #noqa DTZ005
+                        date  = datetime.now().strftime("%Y-%m-%d")#noqa DTZ005
                         break
                     if validTime(date):
                         date = validTime(date)
@@ -252,121 +280,151 @@ def mainMenu():#主菜单
 
 #查账
         elif goToMenu == "3" or goToMenu == "f":
-            way2find = ""
             while True:
-                print("-" * 19, "查账", "-" * 19)
-                print("以何为规？")
-                print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 5. 备注(m) 0.退出(q)" ) 
-                way2find = input("您的选择？").strip()
-                if way2find in iQuit:
-                    break 
-                way2find, goOn = checkSlection(way2find, slections)
-                if goOn == False:
-                    print("目前只支持以上选项哦。")
-                    continue
-
-                quiz = "用于查询的关键词："
-                word2find = 0
+                way2find = ""
                 while True:
-                    word2find, inAccs = word2find_check(way2find, word2find, quiz, accounts)
-                    if inAccs:
-                        break
-                    else:
-                        print("您再斟酌斟酌？")
-                result = []
-                getAccount(way2find, word2find, result, accounts)
-                if len(result) == 0:
-                    snake()
-                else:
-                    print(f"共找到{len(result)}条账目，立刻供上。")
-                    time.sleep(0.5)
-                    showAccount(result)
+                    print("-" * 19, "查账", "-" * 19)
+                    print("以何为规？")
+                    print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 5. 备注(m) 0.退出(q)" ) 
+                    way2find = input("您的选择？").strip()
+                    if way2find in iQuit:
+                        break 
+                    way2find, goOn = checkSlection(way2find, slections1)
+                    if goOn == False:
+                        print("目前只支持以上选项哦。")
+                        continue
 
-            if way2find not in iQuit:
-                goOn = input("还查账吗？(y)")
-                if goOn == "y":
-                    continue
+                    quiz = "用于查询的关键词："
+                    word2find = 0
+                    while True:
+                        word2find, inAccs = word2find_check(way2find, word2find, quiz, accounts)
+                        if ( way2find == "1" ) and ( not inAccs ):
+                            print("您再斟酌斟酌？")
+                        else:
+                            break
+                    result = getAccount(way2find, word2find, accounts)
+                    if len(result) == 0:
+                        snake()
+                    else:
+                        print(f"共找到{len(result)}条账目，立刻供上。")
+                        time.sleep(0.5)
+                        showAccount(result)
+
+                if way2find not in iQuit:
+                    goOn = input("还查账吗？(y)")
+                    if goOn != "y":
+                        break
 
 #划账
         elif goToMenu == "4" or goToMenu == "d":
-            way2find = ""
             while True:
-                if len(accounts) == 0:
-                    print("还没记呢，比脸还白的账本还要划。怎地，要画画么？")
-                    break
-                print("-" * 19, "划账", "-" * 19)
-                print("依甚划账？")
-                print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 5. 备注(m) 0.退出(q)" ) 
-                way2find = input("您的选择？").strip()
-                if way2find in iQuit:
-                    break 
-                way2find, goOn = checkSlection(way2find, slections)
-                if goOn == False:
-                    print("目前只支持以上选项哦。")
-                    continue
-
-                quiz = "用于划账的关键词："
-                word2find = ""
+                way2find = ""
                 while True:
-                    word2find, inAccs = word2find_check(way2find, word2find, quiz, accounts)
-                    if inAccs:
+                    if len(accounts) == 0:
+                        print("还没记呢，比脸还白的账本还要划。怎地，要画画么？")
                         break
-                    else:
+                    print("-" * 19, "划账", "-" * 19)
+                    print("依甚划账？")
+                    print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 5. 备注(m) 0.退出(q)" ) 
+                    way2find = input("您的选择？").strip()
+                    if way2find in iQuit:
+                        break 
+                    way2find, goOn = checkSlection(way2find, slections1)
+                    if goOn == False:
+                        print("目前只支持以上选项哦。")
+                        continue
+
+                    quiz = "用于划账的关键词："
+                    word2find = ""
+                    while True:
+                        word2find, inAccs = word2find_check(way2find, word2find, quiz, accounts)
+                        if inAccs:
+                            break
                         print("您再斟酌斟酌？")
                         time.sleep(0.2)
-                #issue:如果用户在word2find想退出(到上一步?)。考虑iQuit
+                    #issue:如果用户在word2find想退出(到上一步?)。考虑iQuit
 
-    #加入先让人过一眼要删除的y/n再删除
-                result = []
-                result = getAccount(way2find, word2find, result, accounts)
-                if len(result) == 0:
-                    snake()
-                    time.sleep(0.1)
-                    break
-                else:
-                    print(f"已寻找到{len(result)}条账目")
+        #加入先让人过一眼要删除的y/n再删除
+                    result = getAccount(way2find, word2find, accounts)
+                    if len(result) == 0:
+                        snake()
+                        time.sleep(0.1)
+                        break
+                    else:
+                        print(f"已寻找到{len(result)}条账目")
 
-                if way2find == "1":
-                    accounts = [a for a in accounts if a['id'] != int(word2find)]
-                else:
-                    if input("静默划账(y)？(默认展示)").strip() != "y":
-                        showAccount(result)
-                        if input("确认要划账吗(y)？").strip() != "y":
-                            break
-                    accounts = delAccount(result, accounts)
-                saveData(accounts)
-                loadData()
+                    if way2find == "1":
+                        accounts = [a for a in accounts if a['id'] != int(word2find)]
+                    else:
+                        if input("静默划账(y)？(默认展示)").strip() != "y":
+                            showAccount(result)
+                            if input("确认要划账吗(y)？").strip() != "y":
+                                break
+                        accounts = delAccount(result, accounts)
+                    saveData(accounts)
+                    loadData()
 
-            if way2find not in iQuit:
-                time.sleep(0.2)
-                goOn = input("再划？(y)")
-                if goOn == "y":
-                    continue
+                if way2find not in iQuit:
+                    time.sleep(0.2)
+                    goOn = input("再划？(y)")
+                    if goOn != "y":
+                        break
 
 #统计筛选
         elif goToMenu == "5" or goToMenu == "c" or goToMenu == "6" or goToMenu == "e":
             while True:
-                print("-" * 19, "划账", "-" * 19)
-                print("按啥统账？")
-                print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 0.退出(q)")
-                way2find = input("您说呢？")
-                if way2find in iQuit:
-                    break
-                quiz = start = ""
-                start, _ = word2find_check(way2find, start, quiz, accounts)
-                quiz = over = ""
-                over, _ = word2find_check(way2find, over, quiz, accounts)
-                rang = {}#from start to over
-                #word2find = 1 =2 =3从start到over(这段定义为rang).append到result
-                result = []
-                for r in rang:
-                    result = getAccount(way2find, r, result, accounts)
+                while True:
+                    needCheck = True
+                    equal = False
+                    print("-" * 19, "划账", "-" * 19)
+                    print("按啥统账？")
+                    print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 0.退出(q)")
+                    way2find = input("您说呢？")
+                    if way2find in iQuit:
+                        break
+                    way2find, goOn = checkSlection(way2find, slections2) 
+                    if not goOn:
+                        continue
+                    elif way2find == "4":
+                        needCheck = False
+                        quiz = word2find = "用于统计的关键词："
+                        word2find, _ = word2find_check(way2find, word2find, quiz, accounts)
+                    
+                    while needCheck:
+                        quiz = start = "这总得开个头吧："
+                        start, _ = word2find_check(way2find, start, quiz, accounts)
+                        quiz = over = "这总得结个尾吧："
+                        over, _ = word2find_check(way2find, over, quiz, accounts)
+                        #start比大小over
+                        if start == over:
+                            equal = True
+                        elif (
+                                (( way2find == "1" ) and ( int(start) < int(over) )) or
+                                (( way2find == "2" ) and ( start < over )) or#pyright: ignore
+                                (( way2find == "3" ) and ( Decimal(start) < Decimal(over) ))
+                             ):
+                             break
+                        print("还请您再斟酌斟酌")
+                        time.sleep(0.1)
 
-            if way2find not in iQuit:
-                time.sleep(0.2)
-                goON = input("还统么？(y)")
-                if goON == "y":
-                    continue
+                    result = []
+                    if (not equal) and needCheck: 
+                        rangeList = getRange(way2find, start, over)#from start to over#pyright: ignore
+                        #word2find = 1 =2 =3从start到over(这段定义为rang).append到result
+                        for w in rangeList:
+                            result.extend(getAccount(way2find, w, accounts))
+                    elif equal and needCheck:
+                        word2find = start#pyright: ignore
+                        result = getAccount(way2find, word2find, accounts)
+                    else: 
+                        result = getAccount(way2find, word2find, accounts)# pyright: ignore
+                    showAccount(result)
+
+                if way2find not in iQuit:
+                    time.sleep(0.2)
+                    goON = input("还统么？(y)")
+                    if goON != "y":
+                        break
 
 #合账-退出
         elif goToMenu in iQuit:
