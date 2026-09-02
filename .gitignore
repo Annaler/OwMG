@@ -1,2 +1,4 @@
 /data.json
 .ruff_cache/
+.vscode/
+/OwMG.code-workspace
