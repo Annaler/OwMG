@@ -1,7 +1,8 @@
-from funcs import *
 import time
-from datetime import datetime
 from decimal import Decimal
+
+from funcs import *
+
 
 def mainMenu():#主菜单
     accounts = loadData()
@@ -18,46 +19,9 @@ def mainMenu():#主菜单
             while True:
                 print("纸笔已备好，请！")
 
-                while True:#金额
-                    amount = str(input("金额: ").strip())
-                    goOn = validNum(amount)
-                    if goOn:
-                        amount = Decimal(amount)
-                        amount = str(formatAmount(amount))
-                        break
-                    else:
-                        print("掌柜的，", end = "", flush = False)
-                        time.sleep(0.1)
-                        print("这数不对吧")
-
-                while True:#类别
-                    sort = str(input("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他\n类别: "))         
-                    if sort in sorts:
-                        sort = sorts[sort]
-                        break
-                    elif sort in sorts.values():
-                        break
-                    else:
-                        print("请掌柜的再斟酌")
-                        time.sleep(0.5)
-
-                mark = str(input("备注(默认“N/A”): ").strip())#备注
-                if mark == "":
-                    mark = "N/A"
-
-                while True:#时间
-                    date = str(input("时间(年-月-日，默认当天): ").strip())
-                    if date == "":
-                        date  = datetime.now().strftime("%Y-%m-%d")#noqa DTZ005
-                        break
-                    if validTime(date):
-                        date = validTime(date)
-                        break
-                    print("不支持的格式。")
-                    print("您再斟酌斟酌？")
-                    time.sleep(0.5)
-
                 newID = max([r["id"] for r in accounts], default = 0) + 1#ID
+
+                sort, amount, mark, date = getValue_account()
 
                 account = {
                     "id" : newID,
@@ -115,7 +79,7 @@ def mainMenu():#主菜单
                             print("您再斟酌斟酌？")
                         else:
                             break
-                    result = getAccount(way2find, word2find, accounts)
+                    result = findAccount(way2find, word2find, accounts)
                     if len(result) == 0:
                         snake()
                     else:
@@ -158,7 +122,7 @@ def mainMenu():#主菜单
                     #issue:如果用户在word2find想退出(到上一步?)。考虑iQuit
 
         #加入先让人过一眼要删除的y/n再删除
-                    result = getAccount(way2find, word2find, accounts)
+                    result = findAccount(way2find, word2find, accounts)
                     if len(result) == 0:
                         snake()
                         time.sleep(0.1)
@@ -225,12 +189,12 @@ def mainMenu():#主菜单
                         rangeList = getRange(way2find, start, over)#from start to over#pyright: ignore
                         #word2find = 1 =2 =3从start到over(这段定义为rang).append到result
                         for w in rangeList:
-                            result.extend(getAccount(way2find, w, accounts))
+                            result.extend(findAccount(way2find, w, accounts))
                     elif equal and needCheck:
                         word2find = start#pyright: ignore
-                        result = getAccount(way2find, word2find, accounts)
+                        result = findAccount(way2find, word2find, accounts)
                     else: 
-                        result = getAccount(way2find, word2find, accounts)# pyright: ignore
+                        result = findAccount(way2find, word2find, accounts)# pyright: ignore
                     showAccount(result)
 
                 if way2find not in iQuit:

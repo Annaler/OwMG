@@ -149,7 +149,7 @@ def getRange(way, s, o):
     return r
 
 #拆分并优化查账部分逻辑为方法便于复用
-def getAccount(way, word, accs):
+def findAccount(way, word, accs):
     resu = []
     for a in accs:
         if (
@@ -190,13 +190,67 @@ def showAccount(a):
     print("-" * 44)
     print(f"总计:收入{income} 支出{expand} 结余{balance}")
 
+#getgetget
+def getSort():
+    while True:#类别
+        sort = str(input("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他\n类别: "))         
+        if sort in sorts:
+            sort = sorts[sort]
+            break
+        elif sort in sorts.values():
+            break
+        else:
+            print("请掌柜的再斟酌")
+            time.sleep(0.5)
+    return sort
+def getAmount():
+    while True:#金额
+        amount = str(input("金额: ").strip())
+        goOn = validNum(amount)
+        if goOn:
+            amount = Decimal(amount)
+            amount = str(formatAmount(amount))
+            break
+        else:
+            print("掌柜的，", end = "", flush = False)
+            time.sleep(0.1)
+            print("这数不对吧")
+    return amount
+def getMark():
+    mark = str(input("备注(默认”N/A“)：").strip())
+    if mark == "":
+        mark = "N/A"
+    return mark
+def getDate():
+    while True:#日期
+        date = str(input("日期(年-月-日，默认当天): ").strip())
+        if date == "":
+            date  = datetime.now().strftime("%Y-%m-%d")#noqa DTZ005
+            break
+        if validTime(date):
+            date = validTime(date)
+            break
+        print("不支持的格式。")
+        print("您再斟酌斟酌？")
+        time.sleep(0.5)
+    return date
 
-__all__ = [
+def getValue_account():
+    sort = getSort()
+    amount = getAmount()
+    mark = getMark()
+    date = getDate()
+    return sort, amount, mark, date
+
+        
+
+__all__ = [  # noqa: RUF022
     #变量
     "iQuit", "sorts", "slections1", "slections2",
     #方法
     "saveData", "loadData", "snake", "validNum",
     "formatAmount", "validTime", "checkSlection",
-    "word2find_check", "getRange", "getAccount",
-    "delAccount", "showAccount"
+    "word2find_check", "getRange", "findAccount",
+    "delAccount", "showAccount", "getSort", "getAmount",
+    "getMark", "getDate", "getValue_account",
 ]
