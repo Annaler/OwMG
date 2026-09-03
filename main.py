@@ -205,7 +205,97 @@ def mainMenu():#主菜单
 
 #改账
         elif go2menu == "6" or go2menu == "e":
-            pass
+            while True:
+                print("-" * 19, "改账", "-" * 19)
+                while True:#getID
+                    targetID, inAccs = word2find_check("1", targetID, "请输入目标账目ID:", accounts)
+                    if targetID in iQuit:
+                        break
+                    if inAccs:
+                        break
+                if targetID in iQuit:
+                    break
+                result = findAccount("1", targetID, accounts)
+                showAccount(result)
+            #getWay
+                while True:
+                    print("-" * 44)
+                    print("掌柜的，改甚？")
+                    print("可选: 1. 种类(s) 2. 金额(a) 3. 备注(m) 4. 日期(d) 5. 重写(r) 0.退出(q)")
+                    way2change = input("怎么改？")
+                    if way2change in iQuit:
+                        break
+                    way2change, goOn = checkSlection(way2change, slections3)
+                    if not goOn:
+                        print("目前仅支持以上选项。")
+                    else:
+                        break
+                if way2change in iQuit:
+                    break
+            #change account
+                if way2change == "1":
+                    sort = getSort()
+                    account = {
+                        "id": result[0]["id"],
+                        "sort" : sort,
+                        "amount" : result[0]["amount"],
+                        "mark" : result[0]["mark"],
+                        "date" : result[0]["date"]
+                    }
+                    delAccount(result, accounts)
+                    accounts.append(account)
+                elif way2change == "2":
+                    amount = getAmount()
+                    account = {
+                        "id": result[0]["id"],
+                        "sort" : result[0]["sort"],
+                        "amount" : amount,
+                        "mark" : result[0]["mark"],
+                        "date" : result[0]["date"]
+                    }
+                    delAccount(result, accounts)
+                    accounts.append(account)
+                elif way2change == "3":
+                    mark = getMark()
+                    account = {
+                        "id": result[0]["id"],
+                        "sort" : result[0]["sort"],
+                        "amount" : result[0]["amount"],
+                        "mark" : mark,
+                        "date" : result[0]["date"]
+                    }
+                    delAccount(result, accounts)
+                    accounts.append(account)
+                elif way2change == "4":
+                    date = getDate()
+                    account = {
+                        "id": result[0]["id"],
+                        "sort" : result[0]["sort"], 
+                        "amount" : result[0]["amount"],
+                        "mark" : result[0]["mark"],
+                        "date" : date
+                    }
+                    delAccount(result, accounts)
+                    accounts.append(account)
+                elif way2change == "5":
+                    sort, amount, mark, date = getValue_account()
+                    account = {
+                        "id": result[0]["id"],
+                        "sort" : sort,
+                        "amount" : amount,
+                        "mark" : mark,
+                        "date" : date
+                    }
+                    delAccount(result, accounts)
+                    accounts.append(account)
+                saveData(accounts)
+                loadData()
+                print("改账成功。", end = "", flush = True)
+                time.sleep(0.2)
+
+                goOn = input("再改一笔？(y)")
+                if goOn != "y":
+                    break
 
 #合账-退出
         elif go2menu in iQuit:

@@ -31,6 +31,13 @@ slections2 = {
     "3": ["金额", "a"],
     "4": ["类别", "s"],
 }
+slections3 = {
+    "1": ["sort", "s", "种类"],
+    "2": ["amount", "a", "金额"],
+    "3": ["mark", "m", "备注"],
+    "4": ["date", "d", "日期"],
+    "5": ["r", "rewrite", "重写"],
+}
 
 #定义数据存取
 def saveData(accs):
@@ -190,7 +197,7 @@ def showAccount(a):
     print("-" * 44)
     print(f"总计:收入{income} 支出{expand} 结余{balance}")
 
-#getgetget
+#getgetgetget
 def getSort():
     while True:#类别
         sort = str(input("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他\n类别: "))         
@@ -247,6 +254,7 @@ def getValue_account():
 __all__ = [  # noqa: RUF022
     #变量
     "iQuit", "sorts", "slections1", "slections2",
+    "slections3",
     #方法
     "saveData", "loadData", "snake", "validNum",
     "formatAmount", "validTime", "checkSlection",
