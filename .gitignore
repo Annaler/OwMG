@@ -1,4 +1,8 @@
-/data.json
-.ruff_cache/
-.vscode/
-/OwMG.code-workspace
+*
+
+!*/
+
+!.gitignore
+!main.py
+!funcs.py
+!README.md

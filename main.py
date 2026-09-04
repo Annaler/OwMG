@@ -49,7 +49,7 @@ def mainMenu():#主菜单
 
 #阅账 Issue:账目格式/排版
         elif go2menu == "2" or go2menu == "v":
-            showAccount(accounts)
+            showAccount(accounts, needTotal = True)
             while True:
                 y = input("回到主菜单？(y)")
                 if y == "y":
@@ -72,9 +72,8 @@ def mainMenu():#主菜单
                         continue
 
                     quiz = "用于查询的关键词："
-                    word2find = 0
                     while True:
-                        word2find, inAccs = word2find_check(way2find, word2find, quiz, accounts)
+                        word2find, inAccs = word2find_check(way2find, quiz, accounts)
                         if ( way2find == "1" ) and ( not inAccs ):
                             print("您再斟酌斟酌？")
                         else:
@@ -85,7 +84,7 @@ def mainMenu():#主菜单
                     else:
                         print(f"共找到{len(result)}条账目，立刻供上。")
                         time.sleep(0.5)
-                        showAccount(result)
+                        showAccount(result, needTotal = True)
 
                 if way2find not in iQuit:
                     goOn = input("还查账吗？(y)")
@@ -112,9 +111,8 @@ def mainMenu():#主菜单
                         continue
 
                     quiz = "用于划账的关键词："
-                    word2find = ""
                     while True:
-                        word2find, inAccs = word2find_check(way2find, word2find, quiz, accounts)
+                        word2find, inAccs = word2find_check(way2find, quiz, accounts)
                         if inAccs:
                             break
                         print("您再斟酌斟酌？")
@@ -134,7 +132,7 @@ def mainMenu():#主菜单
                         accounts = [a for a in accounts if a['id'] != int(word2find)]
                     else:
                         if input("静默划账(y)？(默认展示)").strip() != "y":
-                            showAccount(result)
+                            showAccount(result, needTotal = False)
                             if input("确认要划账吗(y)？").strip() != "y":
                                 break
                         accounts = delAccount(result, accounts)
@@ -164,14 +162,14 @@ def mainMenu():#主菜单
                         continue
                     elif way2find == "4":
                         needCheck = False
-                        quiz = word2find = "用于统计的关键词："
-                        word2find, _ = word2find_check(way2find, word2find, quiz, accounts)
+                        quiz = "用于统计的关键词："
+                        word2find, _ = word2find_check(way2find, quiz, accounts)
                     
                     while needCheck:
-                        quiz = start = "这总得开个头吧："
-                        start, _ = word2find_check(way2find, start, quiz, accounts)
-                        quiz = over = "这总得结个尾吧："
-                        over, _ = word2find_check(way2find, over, quiz, accounts)
+                        quiz = "这总得开个头吧："
+                        start, _ = word2find_check(way2find, quiz, accounts)
+                        quiz = "这总得结个尾吧："
+                        over, _ = word2find_check(way2find, quiz, accounts)
                         #start比大小over
                         if start == over:
                             equal = True
@@ -186,7 +184,7 @@ def mainMenu():#主菜单
 
                     result = []
                     if (not equal) and needCheck: 
-                        rangeList = getRange(way2find, start, over)#from start to over#pyright: ignore
+                        rangeList = getRange(way2find, start, over)#pyright: ignore
                         #word2find = 1 =2 =3从start到over(这段定义为rang).append到result
                         for w in rangeList:
                             result.extend(findAccount(way2find, w, accounts))
@@ -195,7 +193,7 @@ def mainMenu():#主菜单
                         result = findAccount(way2find, word2find, accounts)
                     else: 
                         result = findAccount(way2find, word2find, accounts)# pyright: ignore
-                    showAccount(result)
+                    showAccount(result, needTotal = True)
 
                 if way2find not in iQuit:
                     time.sleep(0.2)
@@ -208,7 +206,8 @@ def mainMenu():#主菜单
             while True:
                 print("-" * 19, "改账", "-" * 19)
                 while True:#getID
-                    targetID, inAccs = word2find_check("1", targetID, "请输入目标账目ID:", accounts)
+                    quiz = "请输入目标账目ID:"
+                    targetID, inAccs = word2find_check("1", quiz, accounts)
                     if targetID in iQuit:
                         break
                     if inAccs:
@@ -216,7 +215,7 @@ def mainMenu():#主菜单
                 if targetID in iQuit:
                     break
                 result = findAccount("1", targetID, accounts)
-                showAccount(result)
+                showAccount(result, needTotal = False)
             #getWay
                 while True:
                     print("-" * 44)
@@ -233,67 +232,14 @@ def mainMenu():#主菜单
                 if way2change in iQuit:
                     break
             #change account
-                if way2change == "1":
-                    sort = getSort()
-                    account = {
-                        "id": result[0]["id"],
-                        "sort" : sort,
-                        "amount" : result[0]["amount"],
-                        "mark" : result[0]["mark"],
-                        "date" : result[0]["date"]
-                    }
-                    delAccount(result, accounts)
-                    accounts.append(account)
-                elif way2change == "2":
-                    amount = getAmount()
-                    account = {
-                        "id": result[0]["id"],
-                        "sort" : result[0]["sort"],
-                        "amount" : amount,
-                        "mark" : result[0]["mark"],
-                        "date" : result[0]["date"]
-                    }
-                    delAccount(result, accounts)
-                    accounts.append(account)
-                elif way2change == "3":
-                    mark = getMark()
-                    account = {
-                        "id": result[0]["id"],
-                        "sort" : result[0]["sort"],
-                        "amount" : result[0]["amount"],
-                        "mark" : mark,
-                        "date" : result[0]["date"]
-                    }
-                    delAccount(result, accounts)
-                    accounts.append(account)
-                elif way2change == "4":
-                    date = getDate()
-                    account = {
-                        "id": result[0]["id"],
-                        "sort" : result[0]["sort"], 
-                        "amount" : result[0]["amount"],
-                        "mark" : result[0]["mark"],
-                        "date" : date
-                    }
-                    delAccount(result, accounts)
-                    accounts.append(account)
-                elif way2change == "5":
-                    sort, amount, mark, date = getValue_account()
-                    account = {
-                        "id": result[0]["id"],
-                        "sort" : sort,
-                        "amount" : amount,
-                        "mark" : mark,
-                        "date" : date
-                    }
-                    delAccount(result, accounts)
-                    accounts.append(account)
-                saveData(accounts)
-                loadData()
-                print("改账成功。", end = "", flush = True)
-                time.sleep(0.2)
+                accounts, goOn = changeAccount(way2change, result, account, accounts)
+                if goOn == "y":
+                    saveData(accounts)
+                    loadData()
+                    print("改账成功。", end = "", flush = True)
+                    time.sleep(0.2)
 
-                goOn = input("再改一笔？(y)")
+                goOn = input("再改一笔？(y)").strip()
                 if goOn != "y":
                     break
 

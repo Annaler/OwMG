@@ -8,19 +8,14 @@
 
 1. 阅账
 
-    * 实现Options/Settings for user（可选）x
+    * 实现Options/Settings for user(可选)
     * 缩进格式/排版相关问题未解决 x
+    * 类似less,过多时分页展示，一页展示默认5?(as a config)
+    >也就是说多一个config.json?or maybe just txt:config.txt?or just "config"
 
 2. 查账
 
    * 精准匹配->模糊
-
-3. 改账
-
-    * 根据 ID 选择要修改的记录
-    * 如果重填复用新账？（考虑拆解新账）
-    * 二次确认
-    * 修改后保存并重加载数据
 
 * 临时备份（考虑）
   * 仅保存上一次更改后的数据

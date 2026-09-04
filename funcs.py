@@ -40,9 +40,9 @@ slections3 = {
 }
 
 #定义数据存取
-def saveData(accs):
+def saveData(accounts):
     with open("data.json", "w", encoding="utf-8") as f:
-        json.dump(accs, f, ensure_ascii = False, indent = 4)
+        json.dump(accounts, f, ensure_ascii = False, indent = 4)
 def loadData():
     if not os.path.exists("data.json"):
         return []
@@ -55,11 +55,11 @@ def snake():
     print("see,snake:b\n(   )\n(   )\n(. .)")
 
 #金额数校验
-def validNum(n):
+def validNum(amount):
     expe = r'^-?\d+(\.\d{1,2})?$' #正则：整数或一/两位小数
-    if re.match(expe, n):
+    if re.match(expe, amount):
         try:
-            Decimal(n)
+            Decimal(amount)
             goOn = True
             return goOn
         except ValueError:
@@ -67,125 +67,128 @@ def validNum(n):
     goOn = False
     return goOn
 #金额格式化
-def formatAmount(n):
-    return n.quantize(Decimal('0.01'))
+def formatAmount(amount):
+    return amount.quantize(Decimal('0.01'))
 
 #时间校验与自动修正
-def validTime(t):
+def validTime(date):
     for fmt in dateFormat:
         try:
-            dt = datetime.strptime(t, fmt) # noqa: DTZ007
+            dt = datetime.strptime(date, fmt) # noqa: DTZ007
             return dt.strftime("%Y-%m-%d")
         except (ValueError, TypeError):
             continue
     return False
 
 #查账选项校验与格式化
-def checkSlection(way, slec):
+def checkSlection(way2find, slections):
     #反向映射构建
     reverseMap = {}
-    for key, values in slec.items():
+    for key, values in slections.items():
         for value in values:
             reverseMap[value] = key
-    if way in slec:
+    if way2find in slections:
         goOn = True
-        return way, goOn
-    elif way in reverseMap:
+        return way2find, goOn
+    elif way2find in reverseMap:
         goOn = True
-        return reverseMap[way], goOn
+        return reverseMap[way2find], goOn
     goOn = False
-    return way, goOn
+    return way2find, goOn
 
 #获得，校验并format word2find
-def word2find_check(way, word, q, accs):
+def word2find_check(way2find, quiz, accounts):
     inAcc = goOn = False
     while True:
-        if way == "4":
+        if way2find == "4":
             print("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他")
-        word = input(q).strip()
-        if (word != "0") and (word in iQuit):
+        word2find = input(quiz).strip()
+        if (word2find != "0") and (word2find in iQuit):
             break
-        elif way == "1":#by ID
+        elif way2find == "1":#by ID
             try:
-                int(word)
+                int(word2find)
                 goOn = True
             except ValueError:
                 pass
-            if goOn and any(i.get('id') == int(word) for i in accs):
+            if goOn and any(i.get('id') == int(word2find) for i in accounts):
                 inAcc = True
                 break
     #金额、日期、种类校验并转换:复用之前新账 种类逻辑，部分金额、日期逻辑
-        elif way == "2" and validTime(word):
-            word = validTime(word)
+        elif way2find == "2" and validTime(word2find):
+            word2find = validTime(word2find)
             break
-        elif way == "3":
-            goOn = validNum(word)
+        elif way2find == "3":
+            goOn = validNum(word2find)
             if goOn:
-                word = Decimal(word)
-                word = str(formatAmount(word))
+                word2find = Decimal(word2find)
+                word2find = str(formatAmount(word2find))
                 break
-        elif way == "4":
-            if word in sorts:
-                word = sorts[word]
+        elif way2find == "4":
+            if word2find in sorts:
+                word2find = sorts[word2find]
                 break
-            elif word in sorts.values():
+            elif word2find in sorts.values():
                 break
         print("您再斟酌斟酌？")
         time.sleep(0.5)
-    return word, inAcc #pyright: ignore 
+    return word2find, inAcc #pyright: ignore 
 
 #get range: s to o
-def getRange(way, s, o):
+def getRange(way2find, start, over):
     r = []
-    if way == "1":
-        current = int(s)
-        while current <= int(o):
+    if way2find == "1":
+        current = int(start)
+        while current <= int(over):
             r.append(current)
             current += 1
-    elif way == "2":
-        current = datetime.strptime(s, "%Y-%m-%d")#noqa DTZ007
-        while current.strftime("%Y-%m-%d") <= o:
+    elif way2find == "2":
+        current = datetime.strptime(start, "%Y-%m-%d")#noqa DTZ007
+        while current.strftime("%Y-%m-%d") <= over:
             r.append(current.strftime("%Y-%m-%d"))
             current += timedelta(days = 1)
-    elif way == "3":
-        current = Decimal(s)
+    elif way2find == "3":
+        current = Decimal(start)
         step = Decimal('0.01')
-        while current <= Decimal(o):
+        while current <= Decimal(over):
             r.append(current)
             current += step
     return r
 
 #拆分并优化查账部分逻辑为方法便于复用
-def findAccount(way, word, accs):
-    resu = []
-    for a in accs:
+def findAccount(way2find, word2find, accounts):
+    result = []
+    for a in accounts:
         if (
-                (way == "1" and word == str(a['id'])) or
-                (way== "2" and word == str(a['date'])) or
-                (way == "3" and word == str(a['amount'])) or
-                (way == "4" and word == str(a['sort'])) or
-                (way == "5" and word == str(a['mark']))
+                (way2find == "1" and word2find == str(a['id'])) or
+                (way2find== "2" and word2find == str(a['date'])) or
+                (way2find == "3" and word2find == str(a['amount'])) or
+                (way2find == "4" and word2find == str(a['sort'])) or
+                (way2find == "5" and word2find == str(a['mark']))
             ):
-            resu.append(a)
-    return resu
+            result.append(a)
+    return result
 
 #全匹配删除，从accounts由result所有
-def delAccount(resu, accs):
-    accs = [a for a in accs if a not in resu]
-    return accs
+def delAccount(result, accounts):
+    accounts = [a for a in accounts if a not in result]
+    return accounts
 
 #显示账目方法（通用）
-def showAccount(a):
-    income = 0
-    expand = 0
-    balance = 0
+def showAccount(a,needTotal):
     print("-" * 44)
     print(f"{'ID':<8} {'日期':<10} {'类别':<4} {'金额':<8} {'备注':<8}")
     print("-" * 44)
     if not a:
         print("空空如也，记笔账吧。")
         income = expand = balance = "N/A"
+    elif a and (not needTotal):
+        for i in a:
+            print(f"{i['id']:<4}{i['date']:<10}{i['sort']:<8}{i['amount']:<8}{i['mark']:<8}")
     else:
+        income = 0
+        expand = 0
+        balance = 0
         for i in a:
             print(f"{i['id']:<4}{i['date']:<10}{i['sort']:<8}{i['amount']:<8}{i['mark']:<8}")
             amt = Decimal(i['amount'])
@@ -195,7 +198,8 @@ def showAccount(a):
                 expand += Decimal(abs(amt))
         balance = income - expand
     print("-" * 44)
-    print(f"总计:收入{income} 支出{expand} 结余{balance}")
+    if needTotal:
+        print(f"总计:收入{income} 支出{expand} 结余{balance}")#pyright: ignore
 
 #getgetgetget
 def getSort():
@@ -249,7 +253,62 @@ def getValue_account():
     date = getDate()
     return sort, amount, mark, date
 
-        
+#ya guy really wanna change?
+def changeAccount(way2change, result, accounts):
+    if way2change == "5":
+        sort, amount, mark, date = getValue_account()
+        account = {
+                        "id": result[0]["id"],
+                        "sort" : sort,
+                        "amount" : amount,
+                        "mark" : mark,
+                        "date" : date
+       }
+    elif way2change == "1":
+        sort = getSort()
+        account = {
+                        "id": result[0]["id"],
+                        "sort" : sort,
+                        "amount" : result[0]["amount"],
+                        "mark" : result[0]["mark"],
+                        "date" : result[0]["date"]
+        }
+    elif way2change == "2":
+        amount = getAmount()
+        account = {
+            "id": result[0]["id"],
+            "sort" : result[0]["sort"],
+            "amount" : amount,
+            "mark" : result[0]["mark"],
+            "date" : result[0]["date"]
+        }
+    elif way2change == "3":
+        mark = getMark()
+        account = {
+            "id": result[0]["id"],
+            "sort" : result[0]["sort"],
+            "amount" : result[0]["amount"],
+            "mark" : mark,
+            "date" : result[0]["date"]
+        }
+    elif way2change == "4":
+        date = getDate()
+        account = {
+            "id": result[0]["id"],
+            "sort" : result[0]["sort"], 
+            "amount" : result[0]["amount"],
+            "mark" : result[0]["mark"],
+            "date" : date
+        }
+
+    showAccount(account, needTotal = False)#pyright: ignore
+    goOn = input("以上为改后账目,确定更改?(y)").strip()
+    if goOn != "y":
+        print("已取消更改。")
+    delAccount(result, accounts)
+    accounts.append(account)#pyright: ignore
+    return accounts, goOn
+
 
 __all__ = [  # noqa: RUF022
     #变量
@@ -260,5 +319,6 @@ __all__ = [  # noqa: RUF022
     "formatAmount", "validTime", "checkSlection",
     "word2find_check", "getRange", "findAccount",
     "delAccount", "showAccount", "getSort", "getAmount",
-    "getMark", "getDate", "getValue_account",
+    "getMark", "getDate", "getValue_account", "changeAccount",
 ]
+
