@@ -1,3 +1,4 @@
+#pylint:disable=W0614, W0401
 import time
 from decimal import Decimal
 
@@ -51,8 +52,8 @@ def mainMenu():#主菜单
         elif go2menu == "2" or go2menu == "v":
             showAccount(accounts, needTotal = True)
             while True:
-                y = input("回到主菜单？(y)")
-                if y == "y":
+                back = input("回到主菜单？(y)")
+                if back == "y":
                     break
 
 #查账
@@ -74,10 +75,10 @@ def mainMenu():#主菜单
                     quiz = "用于查询的关键词："
                     while True:
                         word2find, inAccs = word2find_check(way2find, quiz, accounts)
-                        if ( way2find == "1" ) and ( not inAccs ):
-                            print("您再斟酌斟酌？")
-                        else:
+                        if ( way2find != "1" ) and inAccs:
                             break
+                        print("您再斟酌斟酌？")
+
                     result = findAccount(way2find, word2find, accounts)
                     if len(result) == 0:
                         snake()
@@ -232,7 +233,7 @@ def mainMenu():#主菜单
                 if way2change in iQuit:
                     break
             #change account
-                accounts, goOn = changeAccount(way2change, result, account, accounts)
+                accounts, goOn = changeAccount(way2change, result, accounts)
                 if goOn == "y":
                     saveData(accounts)
                     loadData()

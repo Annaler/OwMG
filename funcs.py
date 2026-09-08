@@ -5,7 +5,7 @@ import time
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-iQuit = ["0", "q", "退出", "quit"]
+iQuit = ["0", "q", "Q", "退出", "quit", "Quit"]
 sorts = {"1": "吃喝","2": "玩乐", "3": "衣", "4": "住", "5": "行", "0": "其他"}
 dateFormat = [
     "%Y-%m-%d",
@@ -312,13 +312,14 @@ def changeAccount(way2change, result, accounts):
 
 __all__ = [  # noqa: RUF022
     #变量
-    "iQuit", "sorts", "slections1", "slections2",
+    "iQuit",
+    "slections1", "slections2",
     "slections3",
     #方法
-    "saveData", "loadData", "snake", "validNum",
-    "formatAmount", "validTime", "checkSlection",
-    "word2find_check", "getRange", "findAccount",
-    "delAccount", "showAccount", "getSort", "getAmount",
-    "getMark", "getDate", "getValue_account", "changeAccount",
+    "sanke",
+    "saveData", "loadData",
+    "checkSlection", "word2find_check",
+    "getRange", "findAccount",
+    "showAccount", "getValue_account",
+    "delAccount", "changeAccount",
 ]
-
