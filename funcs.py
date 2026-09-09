@@ -1,3 +1,4 @@
+#pylint:disable=E0606
 import json
 import os
 import re
@@ -316,7 +317,7 @@ __all__ = [  # noqa: RUF022
     "slections1", "slections2",
     "slections3",
     #方法
-    "sanke",
+    "snake",
     "saveData", "loadData",
     "checkSlection", "word2find_check",
     "getRange", "findAccount",

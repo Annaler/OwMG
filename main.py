@@ -42,11 +42,14 @@ def mainMenu():#主菜单
                     time.sleep(0.5)
                 print("记账成功。", end = "", flush = True)
                 while True:
-                    goOn = input("再记一笔？(y/n)")
+                    goOn = input("再记一笔？(y)")
                     if goOn == "y":
                         continue
-                    elif goOn == "n":
+                    else:
+                        goOn = True
                         break
+                if goOn:
+                    break
 
 #阅账 Issue:账目格式/排版
         elif go2menu == "2" or go2menu == "v":
@@ -118,6 +121,8 @@ def mainMenu():#主菜单
                             break
                         print("您再斟酌斟酌？")
                         time.sleep(0.2)
+                    if inAccs:
+                        break
                     #issue:如果用户在word2find想退出(到上一步?)。考虑iQuit
 
         #加入先让人过一眼要删除的y/n再删除
