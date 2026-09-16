@@ -2,6 +2,8 @@
 
 >已知:这是一个纯py记账软件,练习用
 
+该项目基于纯C语言的实现见[cOwMG](https://github.com/Annaler/cOwMG)。
+
 ---
 
 ## 待修复/实现

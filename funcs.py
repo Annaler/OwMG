@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Annaler
+# SPDX-License-Identifier: MPL-2.0
 #pylint:disable=E0606
 import json
 import os

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Annaler
+# SPDX-License-Identifier: MPL-2.0
 #pylint:disable=W0614, W0401
 import time
 from decimal import Decimal
