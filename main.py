@@ -258,6 +258,7 @@ def mainMenu():#主菜单
             print("亍，", end = "", flush = True)
             time.sleep(0.3)
             print("那就这样吧先。")
+            break
 
         else:
             print("这不对吧，", end = "", flush = True)
