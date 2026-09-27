@@ -177,23 +177,82 @@ def delAccount(result, accounts):
     accounts = [a for a in accounts if a not in result]
     return accounts
 
-#显示账目方法（通用）
+#显示宽度
+def displayWidth(string):
+    width = 0
+    for c in string:
+        if '\u4e00' <= c <= '\u9fff':
+            width += 2
+        else:
+            width += 1
+    return width
+#如果字符串超宽，换行
+def wrapByWidth(string, width):
+    lines = []
+    current = ""
+    currentWidth = 0
+    for c in string:
+        cWidth = displayWidth(c)
+        if (currentWidth + cWidth) > width:
+            lines.append(current)
+            current = c
+            currentWidth = cWidth
+        else:
+            current += c
+            currentWidth += cWidth
+    if current:
+        lines.append(current)
+    return lines if lines else [""]
+#自动居中
+def centerPad(string, width):
+    stringWidth = displayWidth(string)
+    if stringWidth >= width:
+        return string
+    totalPad = width - stringWidth
+    left = totalPad // 2
+    right = totalPad - left
+    return (" " * left + string + " " * right)
+def formatRow(id_, date, sort, amount, mark):
+    cols = [
+            (str(id_), 4),
+            (date, 10),
+            (sort, 4),
+            (amount, 10),
+            (mark, 8),
+    ]
+    wrappedRow = [wrapByWidth(c, width) for c, width in cols]
+    maxLines = max(len(w) for w in wrappedRow)
+    for w in wrappedRow:#确保行内各列行高一致
+        while len(w) < maxLines:
+            w.append("")
+    lines = []#拼接行
+    for i in range(maxLines):
+        parts = []
+        for j, w in enumerate(wrappedRow):
+            parts.append(centerPad(w[i], cols[j][1]))
+        line = "  ".join(parts)
+        lines.append(line)
+    return lines
+
+#显示账目方法(通用)
 def showAccount(a,needTotal):
     print("-" * 44)
-    print(f"{'ID':<8} {'日期':<10} {'类别':<4} {'金额':<8} {'备注':<8}")
+    print(" ID      日期     类别     金额       备注  ")#硬编码, may bad, but funny
     print("-" * 44)
     if not a:
         print("空空如也，记笔账吧。")
         income = expand = balance = "N/A"
     elif a and (not needTotal):
         for i in a:
-            print(f"{i['id']:<4}{i['date']:<10}{i['sort']:<8}{i['amount']:<8}{i['mark']:<8}")
+            for line in formatRow(i['id'], i['date'], i['sort'], i['amount'], i['mark']):
+                print(line)
     else:
         income = 0
         expand = 0
         balance = 0
         for i in a:
-            print(f"{i['id']:<4}{i['date']:<10}{i['sort']:<8}{i['amount']:<8}{i['mark']:<8}")
+            for line in formatRow(i['id'], i['date'], i['sort'], i['amount'], i['mark']):
+                print(line)
             amt = Decimal(i['amount'])
             if amt > 0:
                 income += amt
@@ -308,6 +367,7 @@ def changeAccount(way2change, result, accounts):
     goOn = input("以上为改后账目,确定更改?(y)").strip()
     if goOn != "y":
         print("已取消更改。")
+        return accounts, goOn
     delAccount(result, accounts)
     accounts.append(account)#pyright: ignore
     return accounts, goOn

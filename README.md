@@ -11,7 +11,11 @@
 1. 阅账
 
     * 实现Options/Settings for user(可选)
-    * 缩进格式/排版相关问题未解决 x
+    * 缩进格式/排版相关问题未解决(fixed)
+    >实现: 通过displayWidth计算字符串显示宽度
+    wrapByWidth当超宽加上换行(在formatRow中为同行其他类型数据字符串一并加上换行)
+    centerPad为各类数据字符串填充空格使其居中显示
+    formatRow调用以上，在showAccount调用formatRow
     * 类似less,过多时分页展示，一页展示默认5?(as a config)
     >也就是说多一个config.json?or maybe just txt:config.txt?or just "config"
 
@@ -33,4 +37,4 @@ print("没有账目，但是你发现了一条小蛇/Snake Only")
 print("see,snake:b\n(   )\n(   )\n(. .)")
 ```
 
->似乎没必要
+>似乎没必要, 但是很好玩！
