@@ -193,13 +193,13 @@ def wrapByWidth(string, width):
     currentWidth = 0
     for c in string:
         cWidth = displayWidth(c)
-        if (currentWidth + cWidth) > width:
+        if (currentWidth + cWidth) <= width:
+            current += c
+            currentWidth += cWidth
+        else:
             lines.append(current)
             current = c
             currentWidth = cWidth
-        else:
-            current += c
-            currentWidth += cWidth
     if current:
         lines.append(current)
     return lines if lines else [""]
@@ -208,9 +208,9 @@ def centerPad(string, width):
     stringWidth = displayWidth(string)
     if stringWidth >= width:
         return string
-    totalPad = width - stringWidth
-    left = totalPad // 2
-    right = totalPad - left
+    totalPad = (width - stringWidth)
+    left = (totalPad // 2)
+    right = (totalPad - left)
     return (" " * left + string + " " * right)
 def formatRow(id_, date, sort, amount, mark):
     cols = [
@@ -235,7 +235,7 @@ def formatRow(id_, date, sort, amount, mark):
     return lines
 
 #显示账目方法(通用)
-def showAccount(a,needTotal):
+def showAccount(a, needTotal):
     print("-" * 44)
     print(" ID      日期     类别     金额       备注  ")#硬编码, may bad, but funny
     print("-" * 44)
@@ -244,15 +244,15 @@ def showAccount(a,needTotal):
         income = expand = balance = "N/A"
     elif a and (not needTotal):
         for i in a:
-            for line in formatRow(i['id'], i['date'], i['sort'], i['amount'], i['mark']):
-                print(line)
+            for row in formatRow(i['id'], i['date'], i['sort'], i['amount'], i['mark']):
+                print(row)
     else:
         income = 0
         expand = 0
         balance = 0
         for i in a:
-            for line in formatRow(i['id'], i['date'], i['sort'], i['amount'], i['mark']):
-                print(line)
+            for row in formatRow(i['id'], i['date'], i['sort'], i['amount'], i['mark']):
+                print(row)
             amt = Decimal(i['amount'])
             if amt > 0:
                 income += amt
