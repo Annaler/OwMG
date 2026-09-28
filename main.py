@@ -135,15 +135,11 @@ def mainMenu():#主菜单
                         break
                     else:
                         print(f"已寻找到{len(result)}条账目")
-
-                    if way2find == "1":
-                        accounts = [a for a in accounts if a['id'] != int(word2find)]
-                    else:
-                        if input("静默划账(y)？(默认展示)").strip() != "y":
-                            showAccount(result, needTotal = False)
-                            if input("确认要划账吗(y)？").strip() != "y":
-                                break
-                        accounts = delAccount(result, accounts)
+                    if input("静默划账(y)？(默认展示)").strip() != "y":
+                        showAccount(result, needTotal = False)
+                        if input("确认要划账吗(y)？").strip() != "y":
+                            break
+                    accounts = delAccount(result, accounts)
                     saveData(accounts)
                     loadData()
 
