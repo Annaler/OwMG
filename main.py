@@ -123,8 +123,6 @@ def mainMenu():#主菜单
                             break
                         print("您再斟酌斟酌？")
                         time.sleep(0.2)
-                    if inAccs:
-                        break
                     #issue:如果用户在word2find想退出(到上一步?)。考虑iQuit
 
         #加入先让人过一眼要删除的y/n再删除
