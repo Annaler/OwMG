@@ -24,7 +24,8 @@ def mainMenu():#主菜单
 
                 newID = max([r["id"] for r in accounts], default = 0) + 1#ID
 
-                sort, amount, mark, date = getValue_account()
+                sort, amount, mark, date, plsQuit = getValue_account()
+                if plsQuit: break
 
                 account = {
                     "id" : newID,
@@ -50,27 +51,27 @@ def mainMenu():#主菜单
                     else:
                         goOn = True
                         break
-                if goOn:
-                    break
+                if goOn: break
 
 #阅账 Issue:账目格式/排版
         elif go2menu == "2" or go2menu == "v":
             showAccount(accounts, needTotal = True)
             while True:
                 back = input("回到主菜单？(y)")
-                if back == "y":
-                    break
+                if back == "y": break
 
 #查账
         elif go2menu == "3" or go2menu == "f":
             while True:
                 way2find = ""
+                plsQuit = False
                 while True:
                     print("-" * 19, "查账", "-" * 19)
                     print("以何为规？")
                     print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 5. 备注(m) 0.退出(q)" ) 
                     way2find = input("您的选择？").strip()
                     if way2find in iQuit:
+                        plsQuit = True
                         break 
                     way2find, goOn = checkSlection(way2find, slections1)
                     if goOn == False:
@@ -79,11 +80,11 @@ def mainMenu():#主菜单
 
                     quiz = "用于查询的关键词："
                     while True:
-                        word2find, inAccs = word2find_check(way2find, quiz, accounts)
-                        if ( way2find != "1" ) and inAccs:
+                        word2find, inAccs, plsQuit = word2find_check(way2find, quiz, accounts)
+                        if ( way2find != "1" ) or inAccs or plsQuit:
                             break
                         print("您再斟酌斟酌？")
-
+                    if plsQuit: break
                     result = findAccount(way2find, word2find, accounts)
                     if len(result) == 0:
                         snake()
@@ -92,15 +93,15 @@ def mainMenu():#主菜单
                         time.sleep(0.5)
                         showAccount(result, needTotal = True)
 
-                if way2find not in iQuit:
+                if not plsQuit:
                     goOn = input("还查账吗？(y)")
-                    if goOn != "y":
-                        break
+                    if goOn != "y": break
 
 #划账
         elif go2menu == "4" or go2menu == "d":
             while True:
                 way2find = ""
+                plsQuit = False
                 while True:
                     if len(accounts) == 0:
                         print("还没记呢，比脸还白的账本还要划。怎地，要画画么？")
@@ -110,6 +111,7 @@ def mainMenu():#主菜单
                     print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 5. 备注(m) 0.退出(q)" ) 
                     way2find = input("您的选择？").strip()
                     if way2find in iQuit:
+                        plsQuit = True
                         break 
                     way2find, goOn = checkSlection(way2find, slections1)
                     if goOn == False:
@@ -118,11 +120,12 @@ def mainMenu():#主菜单
 
                     quiz = "用于划账的关键词："
                     while True:
-                        word2find, inAccs = word2find_check(way2find, quiz, accounts)
-                        if inAccs:
-                            break
+                        word2find, inAccs, plsQuit = word2find_check(way2find, quiz, accounts)
+                        if inAccs or plsQuit: break
                         print("您再斟酌斟酌？")
                         time.sleep(0.2)
+
+                    if plsQuit: break
                     #issue:如果用户在word2find想退出(到上一步?)。考虑iQuit
 
         #加入先让人过一眼要删除的y/n再删除
@@ -141,23 +144,22 @@ def mainMenu():#主菜单
                     saveData(accounts)
                     loadData()
 
-                if way2find not in iQuit:
-                    time.sleep(0.2)
-                    goOn = input("再划？(y)")
-                    if goOn != "y":
-                        break
+                time.sleep(0.2)
+                goOn = input("再划？(y)")
+                if goOn != "y": break
 
 #统计筛选
         elif go2menu == "5" or go2menu == "c":
             while True:
                 while True:
                     needCheck = True
-                    equal = False
+                    equal = plsQuit = False
                     print("-" * 19, "划账", "-" * 19)
                     print("按啥统账？")
                     print("可选：1. ID(i) 2. 日期(d) 3. 金额(a)\n4.类别(s) 0.退出(q)")
                     way2find = input("您说呢？")
                     if way2find in iQuit:
+                        plsQuit = True
                         break
                     way2find, goOn = checkSlection(way2find, slections2) 
                     if not goOn:
@@ -165,16 +167,19 @@ def mainMenu():#主菜单
                     elif way2find == "4":
                         needCheck = False
                         quiz = "用于统计的关键词："
-                        word2find, _ = word2find_check(way2find, quiz, accounts)
-                    
+                        word2find, _, plsQuit = word2find_check(way2find, quiz, accounts)
+                    if plsQuit: break
                     while needCheck:
                         quiz = "这总得开个头吧："
-                        start, _ = word2find_check(way2find, quiz, accounts)
+                        start, _, plsQuit = word2find_check(way2find, quiz, accounts)
+                        if plsQuit: break
                         quiz = "这总得结个尾吧："
-                        over, _ = word2find_check(way2find, quiz, accounts)
+                        over, _, plsQuit = word2find_check(way2find, quiz, accounts)
+                        if plsQuit: break
                         #start比大小over
                         if start == over:
                             equal = True
+                            break
                         elif (
                                 (( way2find == "1" ) and ( int(start) < int(over) )) or
                                 (( way2find == "2" ) and ( start < over )) or#pyright: ignore
@@ -196,12 +201,13 @@ def mainMenu():#主菜单
                     else: 
                         result = findAccount(way2find, word2find, accounts)# pyright: ignore
                     showAccount(result, needTotal = True)
+                    break
 
-                if way2find not in iQuit:
+                if not plsQuit:
                     time.sleep(0.2)
-                    goON = input("还统么？(y)")
-                    if goON != "y":
-                        break
+                    goOn = input("还统么？(y)")
+                    if goOn == "y": continue
+                break
 
 #改账
         elif go2menu == "6" or go2menu == "e":
@@ -209,13 +215,9 @@ def mainMenu():#主菜单
                 print("-" * 19, "改账", "-" * 19)
                 while True:#getID
                     quiz = "请输入目标账目ID:"
-                    targetID, inAccs = word2find_check("1", quiz, accounts)
-                    if targetID in iQuit:
-                        break
-                    if inAccs:
-                        break
-                if targetID in iQuit:
-                    break
+                    targetID, inAccs, plsQuit = word2find_check("1", quiz, accounts)
+                    if inAccs or plsQuit: break
+                if plsQuit: break
                 result = findAccount("1", targetID, accounts)
                 showAccount(result, needTotal = False)
             #getWay
@@ -224,15 +226,11 @@ def mainMenu():#主菜单
                     print("掌柜的，改甚？")
                     print("可选: 1. 种类(s) 2. 金额(a) 3. 备注(m) 4. 日期(d) 5. 重写(r) 0.退出(q)")
                     way2change = input("怎么改？")
-                    if way2change in iQuit:
-                        break
+                    if way2change in iQuit: break
                     way2change, goOn = checkSlection(way2change, slections3)
-                    if not goOn:
-                        print("目前仅支持以上选项。")
-                    else:
-                        break
-                if way2change in iQuit:
-                    break
+                    if not goOn: print("目前仅支持以上选项。")
+                    else: break
+                if way2change in iQuit: break
             #change account
                 accounts, goOn = changeAccount(way2change, result, accounts)
                 if goOn == "y":
@@ -242,8 +240,7 @@ def mainMenu():#主菜单
                     time.sleep(0.2)
 
                 goOn = input("再改一笔？(y)").strip()
-                if goOn != "y":
-                    break
+                if goOn != "y": break
 
 #合账-退出
         elif go2menu in iQuit:

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 iQuit = ["0", "q", "Q", "退出", "quit", "Quit"]
-sorts = {"1": "吃喝","2": "玩乐", "3": "衣", "4": "住", "5": "行", "0": "其他"}
+sorts = {"1": "吃喝", "2": "玩乐", "3": "衣", "4": "住", "5": "行", "0": "其他"}
 dateFormat = [
     "%Y-%m-%d",
     "%Y/%m/%d",
@@ -106,7 +106,8 @@ def word2find_check(way2find, quiz, accounts):
         if way2find == "4":
             print("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他")
         word2find = input(quiz).strip()
-        if (word2find != "0") and (word2find in iQuit):
+        if word2find in iQuit:
+            plsQuit = True
             break
         elif way2find == "1":#by ID
             try:
@@ -135,7 +136,7 @@ def word2find_check(way2find, quiz, accounts):
                 break
         print("您再斟酌斟酌？")
         time.sleep(0.5)
-    return word2find, inAcc #pyright: ignore 
+    return word2find, inAcc, plsQuit #pyright: ignore 
 
 #get range: s to o
 def getRange(way2find, start, over):
@@ -153,7 +154,8 @@ def getRange(way2find, start, over):
     elif way2find == "3":
         current = Decimal(start)
         step = Decimal('0.01')
-        while current <= Decimal(over):
+        over = Decimal(over)
+        while current <= ver:
             r.append(current)
             current += step
     return r
@@ -265,8 +267,12 @@ def showAccount(a, needTotal):
 
 #getgetgetget
 def getSort():
+    plsQuit = False
     while True:#类别
-        sort = str(input("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他\n类别: "))         
+        sort = str(input("可选: 1. 吃喝 2. 玩乐 3.衣 4.住 5.行 0.其他\n类别: "))
+        if sort in iQuit:
+            plsQuit = True
+            break
         if sort in sorts:
             sort = sorts[sort]
             break
@@ -275,10 +281,14 @@ def getSort():
         else:
             print("请掌柜的再斟酌")
             time.sleep(0.5)
-    return sort
+    return sort, plsQuit
 def getAmount():
+    plsQuit = False
     while True:#金额
         amount = str(input("金额: ").strip())
+        if amount in iQuit:
+            plsQuit = True
+            break
         goOn = validNum(amount)
         if goOn:
             amount = Decimal(amount)
@@ -288,15 +298,20 @@ def getAmount():
             print("掌柜的，", end = "", flush = False)
             time.sleep(0.1)
             print("这数不对吧")
-    return amount
+    return amount, plsQuit
 def getMark():
     mark = str(input("备注(默认”N/A“)：").strip())
+    #嗯。我觉得吧，备注可以叫退出。嗯
     if mark == "":
         mark = "N/A"
     return mark
 def getDate():
+    plsQuit = False
     while True:#日期
         date = str(input("日期(年-月-日，默认当天): ").strip())
+        if date in iQuit:
+            plsQuit = True
+            break
         if date == "":
             date  = datetime.now().strftime("%Y-%m-%d")#noqa DTZ005
             break
@@ -306,70 +321,84 @@ def getDate():
         print("不支持的格式。")
         print("您再斟酌斟酌？")
         time.sleep(0.5)
-    return date
+    return date, plsQuit
 
 def getValue_account():
-    sort = getSort()
-    amount = getAmount()
-    mark = getMark()
-    date = getDate()
-    return sort, amount, mark, date
+    sort = amount = mark = date = ""
+    while True:
+        sort, plsQuit = getSort()
+        if plsQuit: break
+        amount, plsQuit = getAmount()
+        if plsQuit: break
+        mark = getMark()
+        date, plsQuit = getDate()
+        break
+    return sort, amount, mark, date, plsQuit
 
 #ya guy really wanna change?
 def changeAccount(way2change, result, accounts):
-    if way2change == "5":
-        sort, amount, mark, date = getValue_account()
-        account = {
-                        "id": result[0]["id"],
-                        "sort" : sort,
-                        "amount" : amount,
-                        "mark" : mark,
-                        "date" : date
-       }
-    elif way2change == "1":
-        sort = getSort()
-        account = {
-                        "id": result[0]["id"],
-                        "sort" : sort,
-                        "amount" : result[0]["amount"],
-                        "mark" : result[0]["mark"],
-                        "date" : result[0]["date"]
-        }
-    elif way2change == "2":
-        amount = getAmount()
-        account = {
-            "id": result[0]["id"],
-            "sort" : result[0]["sort"],
-            "amount" : amount,
-            "mark" : result[0]["mark"],
-            "date" : result[0]["date"]
-        }
-    elif way2change == "3":
-        mark = getMark()
-        account = {
-            "id": result[0]["id"],
-            "sort" : result[0]["sort"],
-            "amount" : result[0]["amount"],
-            "mark" : mark,
-            "date" : result[0]["date"]
-        }
-    elif way2change == "4":
-        date = getDate()
-        account = {
-            "id": result[0]["id"],
-            "sort" : result[0]["sort"], 
-            "amount" : result[0]["amount"],
-            "mark" : result[0]["mark"],
-            "date" : date
-        }
-
-    showAccount(account, needTotal = False)#pyright: ignore
-    goOn = input("以上为改后账目,确定更改?(y)").strip()
-    if goOn != "y":
-        print("已取消更改。")
-        return accounts, goOn
-    delAccount(result, accounts)
-    accounts.append(account)#pyright: ignore
+    plsQuit = False
+    while True:
+        if way2change == "5":
+            print("种类：")
+            sort, amount, mark, date, plsQuit = getValue_account()
+            if plsQuit: break
+            account = {
+                            "id": result[0]["id"],
+                            "sort" : sort,
+                            "amount" : amount,
+                            "mark" : mark,
+                            "date" : date
+           }
+        elif way2change == "1":
+            sort, plsQuit = getSort()
+            if plsQuit: break
+            account = {
+                            "id": result[0]["id"],
+                            "sort" : sort,
+                            "amount" : result[0]["amount"],
+                            "mark" : result[0]["mark"],
+                            "date" : result[0]["date"]
+            }
+        elif way2change == "2":
+            amount, plsQuit = getAmount()
+            if plsQuit: break
+            account = {
+                "id": result[0]["id"],
+                "sort" : result[0]["sort"],
+                "amount" : amount,
+                "mark" : result[0]["mark"],
+                "date" : result[0]["date"]
+            }
+        elif way2change == "3":
+            mark = getMark()
+            account = {
+                "id": result[0]["id"],
+                "sort" : result[0]["sort"],
+                "amount" : result[0]["amount"],
+                "mark" : mark,
+                "date" : result[0]["date"]
+            }
+        elif way2change == "4":
+            date, plsQuit = getDate()
+            if plsQuit: break
+            account = {
+                "id": result[0]["id"],
+                "sort" : result[0]["sort"], 
+                "amount" : result[0]["amount"],
+                "mark" : result[0]["mark"],
+                "date" : date
+            }
+        break
+    goOn = ""
+    if not plsQuit:
+        showAccount([account], needTotal = False)#pyright: ignore
+        goOn = input("以上为改后账目,确定更改?(y)").strip()
+        if goOn != "y":
+            print("已取消更改。")
+            return accounts, goOn
+        accounts = delAccount(result, accounts)
+        accounts.append(account)#pyright: ignore
     return accounts, goOn
 
 
