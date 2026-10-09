@@ -155,7 +155,7 @@ def getRange(way2find, start, over):
         current = Decimal(start)
         step = Decimal('0.01')
         over = Decimal(over)
-        while current <= ver:
+        while current <= over:
             r.append(current)
             current += step
     return r
