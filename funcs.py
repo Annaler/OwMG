@@ -162,6 +162,7 @@ def getRange(way2find, start, over):
 
 #拆分并优化查账部分逻辑为方法便于复用
 def findAccount(way2find, word2find, accounts):
+    word2find = str(word2find)
     result = []
     for a in accounts:
         if (
